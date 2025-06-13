@@ -1,0 +1,34 @@
+KPATH Enterprise - Quick API Test Guide
+=======================================
+
+Test these endpoints to verify system functionality:
+
+1. Health Check (No Auth Required):
+   curl http://localhost:8000/health
+
+2. Login (Get JWT Token):
+   curl -X POST http://localhost:8000/api/v1/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"email": "admin@kpath.local", "password": "admin123"}'
+
+3. List Services (Auth Required):
+   curl http://localhost:8000/api/v1/services \
+     -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+4. Search Services:
+   curl -X POST http://localhost:8000/api/v1/search \
+     -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"query": "email communication"}'
+
+5. Search with Filters:
+   curl -X POST http://localhost:8000/api/v1/search \
+     -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"query": "invoice", "domains": ["Finance"], "capabilities": ["process"]}'
+
+6. API Documentation:
+   - Swagger UI: http://localhost:8000/docs
+   - ReDoc: http://localhost:8000/redoc
+
+Note: Replace YOUR_JWT_TOKEN with the actual token received from login.

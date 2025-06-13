@@ -1,0 +1,406 @@
+{
+  "description": "KPATH Enterprise Search API Test Cases",
+  "version": "1.0",
+  "created": "2025-06-12",
+  "test_cases": [
+    {
+      "id": 1,
+      "description": "Search for customer data management",
+      "query": "customer data management",
+      "expected_services": ["CustomerDataAPI", "CustomerInsightsAgent", "DataQualityAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 2,
+      "description": "Search for payment processing",
+      "query": "payment processing",
+      "expected_services": ["PaymentGatewayAPI", "InvoiceProcessingAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 3,
+      "description": "Search for email services",
+      "query": "email communication",
+      "expected_services": ["EmailMarketingAgent", "ContentGenerationAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 4,
+      "description": "Search for financial reporting",
+      "query": "financial reporting analytics",
+      "expected_services": ["PerformanceAnalyticsAgent", "BudgetMonitoringAgent", "CashFlowForecastingAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 5,
+      "description": "Search for inventory management",
+      "query": "inventory tracking warehouse",
+      "expected_services": ["InventoryManagementAPI", "FacilityManagementAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 6,
+      "description": "Search for authentication",
+      "query": "user authentication security",
+      "expected_services": ["AuthenticationAPI"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 7,
+      "description": "Search for document management",
+      "query": "document storage versioning",
+      "expected_services": ["DocumentStorageAPI", "DataArchivingAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 8,
+      "description": "Search for marketing optimization",
+      "query": "campaign optimization ROI",
+      "expected_services": ["CampaignOptimizationAgent", "LeadScoringAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 9,
+      "description": "Search for content creation",
+      "query": "content generation marketing materials",
+      "expected_services": ["ContentGenerationAgent", "EmailMarketingAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 10,
+      "description": "Search for lead management",
+      "query": "lead scoring qualification",
+      "expected_services": ["LeadScoringAgent", "CustomerInsightsAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 11,
+      "description": "Search for social media monitoring",
+      "query": "social media sentiment analysis",
+      "expected_services": ["SocialMediaMonitoringAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 12,
+      "description": "Search for expense management",
+      "query": "expense approval compliance",
+      "expected_services": ["ExpenseApprovalAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 13,
+      "description": "Search for invoice processing",
+      "query": "invoice matching payment",
+      "expected_services": ["InvoiceProcessingAgent", "PaymentGatewayAPI"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 14,
+      "description": "Search for budget monitoring",
+      "query": "budget tracking forecasting",
+      "expected_services": ["BudgetMonitoringAgent", "CashFlowForecastingAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 15,
+      "description": "Search for tax compliance",
+      "query": "tax calculation filing",
+      "expected_services": ["TaxComplianceAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 16,
+      "description": "Search for fraud detection",
+      "query": "fraud detection transaction monitoring",
+      "expected_services": ["FraudDetectionAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 17,
+      "description": "Search for market intelligence",
+      "query": "competitor analysis market trends",
+      "expected_services": ["MarketIntelligenceAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 18,
+      "description": "Search for performance analytics",
+      "query": "KPI tracking dashboard",
+      "expected_services": ["PerformanceAnalyticsAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 19,
+      "description": "Search for customer insights",
+      "query": "customer behavior analytics churn",
+      "expected_services": ["CustomerInsightsAgent", "CustomerDataAPI"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 20,
+      "description": "Search for pricing optimization",
+      "query": "dynamic pricing optimization",
+      "expected_services": ["PricingOptimizationAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 21,
+      "description": "Search for process mining",
+      "query": "process bottlenecks optimization",
+      "expected_services": ["ProcessMiningAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 22,
+      "description": "Search for data quality",
+      "query": "data validation cleansing",
+      "expected_services": ["DataQualityAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 23,
+      "description": "Search for ETL processes",
+      "query": "ETL pipeline data integration",
+      "expected_services": ["ETLOrchestrationAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 24,
+      "description": "Search for data archiving",
+      "query": "data retention archiving policy",
+      "expected_services": ["DataArchivingAgent", "DocumentStorageAPI"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 25,
+      "description": "Search for real-time processing",
+      "query": "real-time stream processing events",
+      "expected_services": ["RealtimeStreamProcessorAgent"],
+      "domains": null,
+      "capabilities": null
+    },    {
+      "id": 26,
+      "description": "Search for data catalog",
+      "query": "data catalog metadata lineage",
+      "expected_services": ["DataCatalogAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 27,
+      "description": "Search for recruitment",
+      "query": "recruitment resume screening",
+      "expected_services": ["RecruitmentAutomationAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 28,
+      "description": "Search for employee onboarding",
+      "query": "employee onboarding new hire",
+      "expected_services": ["EmployeeOnboardingAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 29,
+      "description": "Search for facility management",
+      "query": "facility maintenance space allocation",
+      "expected_services": ["FacilityManagementAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 30,
+      "description": "Search for compliance monitoring",
+      "query": "regulatory compliance audit",
+      "expected_services": ["ComplianceMonitoringAgent", "TaxComplianceAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 31,
+      "description": "Search with Finance domain filter",
+      "query": "reporting",
+      "expected_services": ["PerformanceAnalyticsAgent", "BudgetMonitoringAgent"],
+      "domains": ["Finance"],
+      "capabilities": null
+    },
+    {
+      "id": 32,
+      "description": "Search with Marketing domain filter",
+      "query": "analytics",
+      "expected_services": ["CampaignOptimizationAgent", "LeadScoringAgent"],
+      "domains": ["Marketing"],
+      "capabilities": null
+    },
+    {
+      "id": 33,
+      "description": "Search with multiple domain filters",
+      "query": "data",
+      "expected_services": ["CustomerDataAPI", "DataQualityAgent"],
+      "domains": ["Data Management", "Customer Service"],
+      "capabilities": null
+    },
+    {
+      "id": 34,
+      "description": "Search with capability filter",
+      "query": "customer",
+      "expected_services": ["CustomerDataAPI", "CustomerInsightsAgent"],
+      "domains": null,
+      "capabilities": ["retrieve"]
+    },
+    {
+      "id": 35,
+      "description": "Search for refund processing",
+      "query": "refund payment chargeback",
+      "expected_services": ["PaymentGatewayAPI"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 36,
+      "description": "Search for SSO authentication",
+      "query": "single sign-on SSO MFA",
+      "expected_services": ["AuthenticationAPI"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 37,
+      "description": "Search for A/B testing",
+      "query": "A/B test optimization conversion",
+      "expected_services": ["CampaignOptimizationAgent", "ContentGenerationAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 38,
+      "description": "Search for influencer tracking",
+      "query": "influencer identification social media",
+      "expected_services": ["SocialMediaMonitoringAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 39,
+      "description": "Search for cash flow",
+      "query": "cash flow working capital forecast",
+      "expected_services": ["CashFlowForecastingAgent", "BudgetMonitoringAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 40,
+      "description": "Search for anomaly detection",
+      "query": "anomaly detection suspicious patterns",
+      "expected_services": ["FraudDetectionAgent", "ExpenseApprovalAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 41,
+      "description": "Search for competitive analysis",
+      "query": "competitive pricing market analysis",
+      "expected_services": ["PricingOptimizationAgent", "MarketIntelligenceAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 42,
+      "description": "Search for workflow automation",
+      "query": "workflow automation process efficiency",
+      "expected_services": ["ProcessMiningAgent", "ETLOrchestrationAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 43,
+      "description": "Search for data enrichment",
+      "query": "data enrichment external sources",
+      "expected_services": ["DataQualityAgent", "CustomerInsightsAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 44,
+      "description": "Search for API management",
+      "query": "API endpoint service management",
+      "expected_services": ["CustomerDataAPI", "PaymentGatewayAPI", "AuthenticationAPI"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 45,
+      "description": "Search for predictive analytics",
+      "query": "predict forecast future trends",
+      "expected_services": ["CustomerInsightsAgent", "CashFlowForecastingAgent", "MarketIntelligenceAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 46,
+      "description": "Search for audit trail",
+      "query": "audit trail logging compliance",
+      "expected_services": ["ComplianceMonitoringAgent", "AuthenticationAPI"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 47,
+      "description": "Search for resource optimization",
+      "query": "optimize resource allocation efficiency",
+      "expected_services": ["FacilityManagementAgent", "CampaignOptimizationAgent", "PricingOptimizationAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 48,
+      "description": "Search for integration services",
+      "query": "integration data pipeline orchestration",
+      "expected_services": ["ETLOrchestrationAgent", "RealtimeStreamProcessorAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 49,
+      "description": "Search for business intelligence",
+      "query": "business intelligence insights analytics",
+      "expected_services": ["PerformanceAnalyticsAgent", "MarketIntelligenceAgent", "CustomerInsightsAgent"],
+      "domains": null,
+      "capabilities": null
+    },
+    {
+      "id": 50,
+      "description": "Search for automation agents",
+      "query": "automated agent processing",
+      "expected_services": ["RecruitmentAutomationAgent", "InvoiceProcessingAgent", "EmailMarketingAgent"],
+      "domains": null,
+      "capabilities": null
+    }
+  ]
+}

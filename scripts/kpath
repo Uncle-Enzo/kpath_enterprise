@@ -1,0 +1,99 @@
+#!/bin/bash
+# KPATH Enterprise management script
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+print_header() {
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${BLUE}                           KPATH Enterprise Management                            ${NC}"
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+}
+
+print_menu() {
+    echo ""
+    echo "Available commands:"
+    echo -e "  ${GREEN}start${NC}    - Start the API server"
+    echo -e "  ${GREEN}stop${NC}     - Stop the API server"
+    echo -e "  ${GREEN}restart${NC}  - Restart the API server"
+    echo -e "  ${GREEN}status${NC}   - Check server status"
+    echo -e "  ${GREEN}logs${NC}     - Show server logs"
+    echo -e "  ${GREEN}test${NC}     - Run API tests"
+    echo -e "  ${GREEN}db${NC}       - Database operations"
+    echo -e "  ${GREEN}help${NC}     - Show this help message"
+    echo ""
+}
+
+case "$1" in
+    start)
+        "$SCRIPT_DIR/start_server.sh"
+        ;;
+    stop)
+        "$SCRIPT_DIR/stop.sh"
+        ;;
+    restart)
+        "$SCRIPT_DIR/restart.sh"
+        ;;
+    status)
+        "$SCRIPT_DIR/status.sh"
+        ;;
+    logs)
+        echo "📋 Showing recent logs..."
+        cd "$PROJECT_DIR"
+        if [ -f "uvicorn.log" ]; then
+            tail -f uvicorn.log
+        else
+            echo "No log file found. Server may not have been started yet."
+        fi
+        ;;
+    test)
+        echo "🧪 Running API tests..."
+        cd "$PROJECT_DIR"
+        source venv/bin/activate
+        python scripts/test_api.py
+        ;;
+    db)
+        case "$2" in
+            seed)
+                echo "🌱 Seeding database..."
+                cd "$PROJECT_DIR"
+                source venv/bin/activate
+                python database/simple_seed.py
+                ;;
+            create-admin)
+                echo "👤 Creating admin user..."
+                cd "$PROJECT_DIR"
+                source venv/bin/activate
+                python scripts/create_admin.py
+                ;;
+            migrate)
+                echo "🔄 Running database migrations..."
+                cd "$PROJECT_DIR"
+                source venv/bin/activate
+                alembic upgrade head
+                ;;
+            *)
+                echo "Database commands:"
+                echo "  kpath db seed         - Seed test data"
+                echo "  kpath db create-admin - Create admin user"
+                echo "  kpath db migrate      - Run migrations"
+                ;;
+        esac
+        ;;
+    help|"")
+        print_header
+        print_menu
+        ;;
+    *)
+        echo -e "${RED}Unknown command: $1${NC}"
+        print_menu
+        exit 1
+        ;;
+esac
