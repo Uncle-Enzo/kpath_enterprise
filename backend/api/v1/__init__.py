@@ -3,7 +3,7 @@ API v1 routes
 """
 from fastapi import APIRouter
 
-from backend.api.v1 import services, users, auth, health, search, api_keys, integration, agent_protocols, import_services
+from backend.api.v1 import services, users, auth, health, search, api_keys, integration, agent_protocols, import_services, analytics
 
 api_router = APIRouter()
 
@@ -17,3 +17,4 @@ api_router.include_router(api_keys.router, prefix="/api-keys", tags=["api-keys"]
 api_router.include_router(integration.router, tags=["integration"])
 api_router.include_router(agent_protocols.router, tags=["agent-protocols"])
 api_router.include_router(import_services.router, prefix="/import", tags=["import"])
+api_router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])

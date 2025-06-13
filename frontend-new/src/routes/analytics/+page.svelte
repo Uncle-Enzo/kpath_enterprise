@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { auth } from '$lib/stores/auth';
+  import { analyticsApi, type AnalyticsData } from '$lib/api/analytics';
   import Fa from 'svelte-fa';
   import { 
     faChartBar, 
@@ -11,12 +12,14 @@
     faDatabase,
     faClock,
     faArrowUp,
-    faArrowDown
+    faArrowDown,
+    faExclamationTriangle
   } from '@fortawesome/free-solid-svg-icons';
   
   let authState: any = null;
   let loading = true;
-  let analytics = {
+  let error = '';
+  let analytics: AnalyticsData = {
     users: {
       total: 0,
       active: 0,
@@ -49,6 +52,9 @@
     }
   };
   
+  // Data collection needs tracking
+  let dataCollectionNeeds: string[] = [];
+  
   // Subscribe to auth state
   auth.subscribe(($auth) => {
     authState = $auth;
@@ -57,25 +63,51 @@
   async function loadAnalytics() {
     try {
       loading = true;
+      error = '';
       
-      // In a real implementation, these would be API calls
-      // For now, we'll simulate the data
+      // Load real analytics data
+      analytics = await analyticsApi.getAnalytics();
       
-      // Simulate API calls with mock data
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Identify data collection needs
+      dataCollectionNeeds = [];
       
+      if (analytics.search.totalQueries === 0) {
+        dataCollectionNeeds.push("Search query tracking and logging");
+      }
+      
+      if (analytics.apiKeys.totalRequests === 0) {
+        dataCollectionNeeds.push("API key request logging and metrics");
+      }
+      
+      if (analytics.users.recentLogins === 0) {
+        dataCollectionNeeds.push("User login activity tracking");
+      }
+      
+      if (analytics.system.uptime === "Unknown") {
+        dataCollectionNeeds.push("System uptime monitoring");
+      }
+      
+      if (analytics.system.memoryUsage === 0) {
+        dataCollectionNeeds.push("System resource monitoring (CPU/Memory)");
+      }
+      
+    } catch (error) {
+      console.error('Error loading analytics:', error);
+      error = `Failed to load analytics: ${error.message || 'Unknown error'}`;
+      
+      // Use fallback mock data
       analytics = {
         users: {
           total: 3,
           active: 3,
           adminCount: 2,
-          recentLogins: 5
+          recentLogins: 0  // Need to implement
         },
         apiKeys: {
           total: 0,
           active: 0,
-          totalRequests: 0,
-          requestsToday: 0
+          totalRequests: 0,  // Need to implement
+          requestsToday: 0   // Need to implement
         },
         services: {
           total: 33,
@@ -90,27 +122,19 @@
           }
         },
         search: {
-          totalQueries: 127,
-          queriesThisWeek: 23,
+          totalQueries: 0,      // Need to implement
+          queriesThisWeek: 0,   // Need to implement
           avgResponseTime: 85,
-          topQueries: [
-            { query: 'customer management', count: 12 },
-            { query: 'payment processing', count: 8 },
-            { query: 'inventory tracking', count: 6 },
-            { query: 'user authentication', count: 5 },
-            { query: 'data analytics', count: 4 }
-          ]
+          topQueries: []        // Need to implement
         },
         system: {
-          uptime: '2 days, 14 hours',
+          uptime: 'Unknown',    // Need to implement
           dbConnections: 12,
-          memoryUsage: 68,
-          cpuUsage: 23
+          memoryUsage: 0,       // Need to implement
+          cpuUsage: 0          // Need to implement
         }
       };
       
-    } catch (error) {
-      console.error('Error loading analytics:', error);
     } finally {
       loading = false;
     }
@@ -229,6 +253,24 @@
           </div>
         </div>
       </div>
+      
+      <!-- Data Collection Needs -->
+      {#if dataCollectionNeeds.length > 0}
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-8">
+          <div class="flex items-start">
+            <Fa icon={faExclamationTriangle} class="text-amber-600 text-xl mt-1 mr-3" />
+            <div>
+              <h3 class="text-lg font-semibold text-amber-800 mb-2">Data Collection Needed</h3>
+              <p class="text-sm text-amber-700 mb-3">The following metrics require additional data collection implementation:</p>
+              <ul class="space-y-1">
+                {#each dataCollectionNeeds as need}
+                  <li class="text-sm text-amber-700">• {need}</li>
+                {/each}
+              </ul>
+            </div>
+          </div>
+        </div>
+      {/if}
       
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <!-- Service Types Distribution -->

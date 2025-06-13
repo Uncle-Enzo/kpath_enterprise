@@ -8,6 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 import logging
+import time
+from datetime import datetime
 
 from backend.core.database import get_db
 from backend.core.auth import get_current_user, get_current_user_flexible
@@ -15,7 +17,7 @@ from backend.schemas.search import (
     SearchRequest, SearchResponse, SearchResultSchema,
     SearchStatusResponse, IndexRebuildRequest, SearchFeedbackRequest
 )
-from backend.models.models import User
+from backend.models.models import User, SearchQuery as SearchQueryLog
 from backend.services.search_manager import get_search_manager
 from backend.services.search.search_service import SearchQuery
 
@@ -53,6 +55,7 @@ async def search_services(
     Returns a list of services ranked by relevance score.
     """
     try:
+        start_time = time.time()
         search_manager = get_search_manager()
         
         if not search_manager.is_initialized:
@@ -74,6 +77,24 @@ async def search_services(
         # Perform search
         results = search_manager.search(query, db)
         
+        # Calculate search time
+        search_time_ms = int((time.time() - start_time) * 1000)
+        
+        # Log search query for analytics
+        try:
+            search_log = SearchQueryLog(
+                query=request.query,
+                user_id=current_user.id if current_user else None,
+                results_count=len(results),
+                response_time_ms=search_time_ms,
+                timestamp=datetime.utcnow()
+            )
+            db.add(search_log)
+            db.commit()
+        except Exception as log_error:
+            logger.warning(f"Failed to log search query: {log_error}")
+            # Don't fail the search if logging fails
+        
         # Convert to response format
         search_results = [
             SearchResultSchema(
@@ -87,13 +108,13 @@ async def search_services(
         ]
         
         # Log search for analytics
-        logger.info(f"Search by user {current_user.id}: '{request.query}' -> {len(results)} results")
+        logger.info(f"Search by user {current_user.id}: '{request.query}' -> {len(results)} results in {search_time_ms}ms")
         
         return SearchResponse(
             query=request.query,
             results=search_results,
             total_results=len(search_results),
-            search_time_ms=0,  # TODO: Add timing
+            search_time_ms=search_time_ms,
             user_id=current_user.id
         )
         
