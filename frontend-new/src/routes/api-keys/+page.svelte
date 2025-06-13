@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { apiKeysApi } from '$lib/api/apiKeys';
+  import { auth } from '$lib/stores/auth';
   import type { APIKey } from '$lib/types';
   import { format } from 'date-fns';
   import Fa from 'svelte-fa';
@@ -11,13 +12,27 @@
   let error = '';
   let showCreateModal = false;
   let newKeyData: any = null;
+  let authState: any = null;
+  
+  // Subscribe to auth state
+  auth.subscribe(($auth) => {
+    authState = $auth;
+  });
   
   async function loadApiKeys() {
     try {
       loading = true;
+      error = '';
+      
+      // Debug auth state
+      console.log('Auth state during loadApiKeys:', authState);
+      console.log('Token:', authState?.token ? 'Present' : 'Missing');
+      
       apiKeys = await apiKeysApi.list();
+      console.log('Loaded API keys:', apiKeys);
     } catch (err: any) {
-      error = 'Failed to load API keys';
+      error = `Failed to load API keys: ${err.message || 'Unknown error'}`;
+      console.error('Error loading API keys:', err);
     } finally {
       loading = false;
     }
@@ -39,19 +54,27 @@
     alert('Copied to clipboard!');
   }
   
-  onMount(loadApiKeys);
+  onMount(async () => {
+    // Ensure auth is initialized
+    auth.init();
+    
+    // Wait a bit for auth to initialize
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    await loadApiKeys();
+  });
 </script>
 
 <div class="space-y-6">
   <div class="flex justify-between items-center">
     <h1 class="text-2xl font-bold text-gray-900">API Keys</h1>
-    <a href="/api-keys/new" class="btn btn-primary">
+    <a href="/api-keys/new" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
       <Fa icon={faPlus} class="mr-2" />
       Generate New Key
     </a>
   </div>
   
-  <div class="card">
+  <div class="bg-white rounded-lg shadow-md p-6">
     <p class="text-sm text-gray-600 mb-4">
       API keys allow programmatic access to the KPath Enterprise API. Keep your keys secure and never share them publicly.
     </p>
@@ -105,7 +128,7 @@
                   <code class="text-sm bg-gray-100 px-2 py-1 rounded">{key.prefix}...</code>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {format(new Date(key.created_at), 'MMM d, yyyy')}
+                  {key.created_at ? format(new Date(key.created_at), 'MMM d, yyyy') : 'Unknown'}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {key.last_used ? format(new Date(key.last_used), 'MMM d, yyyy') : 'Never'}
@@ -116,7 +139,7 @@
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <a href="/api-keys/{key.id}/usage" class="text-primary-600 hover:text-primary-900 mr-3">
+                  <a href="/api-keys/{key.id}/usage" class="text-blue-600 hover:text-blue-900 mr-3">
                     View Usage
                   </a>
                   {#if key.active}

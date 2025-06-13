@@ -1,0 +1,354 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "KPATH Enterprise Service Import Schema",
+  "description": "Schema for importing multiple services into KPATH Enterprise",
+  "type": "object",
+  "required": ["version", "services"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "enum": ["1.0"],
+      "description": "Schema version"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Description of this import batch"
+        },
+        "created_by": {
+          "type": "string",
+          "description": "User who created this import file"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this import file was created"
+        },
+        "tags": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Tags for categorizing this import"
+        }
+      }
+    },
+    "services": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Array of services to import",
+      "items": {
+        "type": "object",
+        "required": ["name", "description", "tool_type"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Unique service name"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Service description"
+          },
+          "endpoint": {
+            "type": "string",
+            "format": "uri",
+            "description": "Service endpoint URL"
+          },
+          "version": {
+            "type": "string",
+            "description": "Service version"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "inactive", "deprecated"],
+            "default": "active",
+            "description": "Service status"
+          },
+          "tool_type": {
+            "type": "string",
+            "enum": ["InternalAgent", "ExternalAgent", "API", "LegacySystem", "ESBEndpoint", "MicroService"],
+            "description": "Type of service/tool"
+          },
+          "interaction_modes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["sync", "async", "stream", "batch"]
+            },
+            "description": "Supported interaction modes"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": ["internal", "org-wide", "public", "restricted"],
+            "default": "internal",
+            "description": "Service visibility level"
+          },
+          "deprecation_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the service will be deprecated"
+          },
+          "deprecation_notice": {
+            "type": "string",
+            "description": "Notice about service deprecation"
+          },
+          "success_criteria": {
+            "type": "object",
+            "description": "Success criteria configuration",
+            "examples": [
+              {
+                "status_codes": [200, 201],
+                "max_response_time_ms": 1000
+              }
+            ]
+          },
+          "default_timeout_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 30000,
+            "description": "Default timeout in milliseconds"
+          },
+          "default_retry_policy": {
+            "type": "object",
+            "description": "Default retry policy configuration",
+            "examples": [
+              {
+                "max_retries": 3,
+                "backoff_multiplier": 2,
+                "initial_interval_ms": 1000
+              }
+            ]
+          },
+          "integration_details": {
+            "type": "object",
+            "description": "Integration configuration details",
+            "required": ["access_protocol"],
+            "properties": {
+              "access_protocol": {
+                "type": "string",
+                "enum": ["REST", "GraphQL", "gRPC", "SOAP", "WebSocket", "ESB"]
+              },
+              "base_endpoint": {
+                "type": "string",
+                "format": "uri"
+              },
+              "auth_method": {
+                "type": "string",
+                "enum": ["OAuth2", "JWT", "APIKey", "Basic", "Custom"]
+              },
+              "auth_config": {
+                "type": "object"
+              },
+              "auth_endpoint": {
+                "type": "string",
+                "format": "uri"
+              },
+              "rate_limit_requests": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "rate_limit_window_seconds": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "max_concurrent_requests": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "circuit_breaker_config": {
+                "type": "object"
+              },
+              "default_headers": {
+                "type": "object"
+              },
+              "request_content_type": {
+                "type": "string",
+                "default": "application/json"
+              },
+              "response_content_type": {
+                "type": "string",
+                "default": "application/json"
+              },
+              "request_transform": {
+                "type": "object"
+              },
+              "response_transform": {
+                "type": "object"
+              },
+              "esb_type": {
+                "type": "string",
+                "enum": ["MuleSoft", "IBMIntegrationBus", "OracleServiceBus", "WSO2", "Other"]
+              },
+              "esb_service_name": {
+                "type": "string"
+              },
+              "esb_routing_key": {
+                "type": "string"
+              },
+              "esb_operation": {
+                "type": "string"
+              },
+              "esb_adapter_type": {
+                "type": "string"
+              },
+              "esb_namespace": {
+                "type": "string"
+              },
+              "esb_version": {
+                "type": "string"
+              },
+              "health_check_endpoint": {
+                "type": "string"
+              },
+              "health_check_interval_seconds": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          },
+          "agent_protocols": {
+            "type": "object",
+            "description": "Agent-specific protocol configuration",
+            "required": ["message_protocol"],
+            "properties": {
+              "message_protocol": {
+                "type": "string",
+                "enum": ["JSON-RPC", "OpenAI", "Anthropic", "Custom"]
+              },
+              "protocol_version": {
+                "type": "string"
+              },
+              "expected_input_format": {
+                "type": "string"
+              },
+              "response_style": {
+                "type": "string",
+                "enum": ["structured", "conversational", "technical", "casual"]
+              },
+              "message_examples": {
+                "type": "object"
+              },
+              "tool_schema": {
+                "type": "object"
+              },
+              "input_validation_rules": {
+                "type": "object"
+              },
+              "output_parsing_rules": {
+                "type": "object"
+              },
+              "requires_session_state": {
+                "type": "boolean",
+                "default": false
+              },
+              "max_context_length": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "supported_languages": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "supports_streaming": {
+                "type": "boolean",
+                "default": false
+              },
+              "supports_async": {
+                "type": "boolean",
+                "default": false
+              },
+              "supports_batch": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          },
+          "capabilities": {
+            "type": "array",
+            "description": "Service capabilities",
+            "items": {
+              "type": "object",
+              "required": ["capability_desc"],
+              "properties": {
+                "capability_name": {
+                  "type": "string",
+                  "description": "Optional capability name"
+                },
+                "capability_desc": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Capability description"
+                },
+                "input_schema": {
+                  "type": "object",
+                  "description": "Input schema for this capability"
+                },
+                "output_schema": {
+                  "type": "object",
+                  "description": "Output schema for this capability"
+                }
+              }
+            }
+          },
+          "industries": {
+            "type": "array",
+            "description": "Industry classifications",
+            "items": {
+              "type": "object",
+              "required": ["industry"],
+              "properties": {
+                "industry": {
+                  "type": "string",
+                  "maxLength": 100,
+                  "description": "Industry name"
+                },
+                "sub_industry": {
+                  "type": "string",
+                  "maxLength": 100,
+                  "description": "Sub-industry"
+                },
+                "use_case_category": {
+                  "type": "string",
+                  "maxLength": 100,
+                  "description": "Use case category"
+                },
+                "use_case_description": {
+                  "type": "string",
+                  "description": "Detailed use case description"
+                },
+                "business_value": {
+                  "type": "string",
+                  "description": "Business value proposition"
+                },
+                "typical_consumers": {
+                  "type": "array",
+                  "items": {"type": "string"},
+                  "description": "Typical service consumers"
+                },
+                "relevance_score": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "Relevance score (0-100)"
+                },
+                "priority_rank": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Priority ranking"
+                },
+                "compliance_frameworks": {
+                  "type": "array",
+                  "items": {"type": "string"},
+                  "description": "Compliance frameworks"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

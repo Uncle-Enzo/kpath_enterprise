@@ -74,7 +74,15 @@ async def create_service(
         description=service_data.description,
         endpoint=service_data.endpoint,
         version=service_data.version,
-        status=service_data.status
+        status=service_data.status,
+        tool_type=service_data.tool_type,
+        interaction_modes=service_data.interaction_modes,
+        visibility=service_data.visibility,
+        deprecation_date=service_data.deprecation_date,
+        deprecation_notice=service_data.deprecation_notice,
+        success_criteria=service_data.success_criteria,
+        default_timeout_ms=service_data.default_timeout_ms,
+        default_retry_policy=service_data.default_retry_policy
     )
     return service
 

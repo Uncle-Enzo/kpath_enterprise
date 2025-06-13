@@ -16,6 +16,15 @@ from backend.schemas.search_schemas import (
     Token, TokenData, LoginRequest
 )
 
+from backend.schemas.integration_schemas import (
+    ServiceIntegrationDetailsBase, ServiceIntegrationDetailsCreate, 
+    ServiceIntegrationDetailsUpdate, ServiceIntegrationDetails,
+    ServiceAgentProtocolsBase, ServiceAgentProtocolsCreate,
+    ServiceAgentProtocolsUpdate, ServiceAgentProtocols,
+    ServiceIndustriesBase, ServiceIndustriesCreate,
+    ServiceIndustriesUpdate, ServiceIndustries
+)
+
 __all__ = [
     # Service schemas
     "ServiceBase", "ServiceCreate", "ServiceUpdate", "Service", "ServiceList",
@@ -30,5 +39,12 @@ __all__ = [
     "FeedbackLogCreate", "FeedbackResponse",
     # System schemas
     "HealthStatus",
-    "Token", "TokenData", "LoginRequest"
+    "Token", "TokenData", "LoginRequest",
+    # Integration schemas
+    "ServiceIntegrationDetailsBase", "ServiceIntegrationDetailsCreate", 
+    "ServiceIntegrationDetailsUpdate", "ServiceIntegrationDetails",
+    "ServiceAgentProtocolsBase", "ServiceAgentProtocolsCreate",
+    "ServiceAgentProtocolsUpdate", "ServiceAgentProtocols",
+    "ServiceIndustriesBase", "ServiceIndustriesCreate",
+    "ServiceIndustriesUpdate", "ServiceIndustries"
 ]

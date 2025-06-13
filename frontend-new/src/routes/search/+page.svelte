@@ -2,7 +2,7 @@
   import { searchApi } from '$lib/api/search';
   import type { SearchRequest, SearchResult } from '$lib/types';
   import Fa from 'svelte-fa';
-  import { faSearch, faClock, faServer } from '@fortawesome/free-solid-svg-icons';
+  import { faSearch, faClock, faServer, faRobot, faCog, faEye, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
   
   let searchRequest: SearchRequest = {
     query: '',
@@ -42,6 +42,38 @@
   function handleKeyPress(e: KeyboardEvent) {
     if (e.key === 'Enter') {
       performSearch();
+    }
+  }
+  
+  function getToolTypeIcon(toolType: string) {
+    switch (toolType) {
+      case 'InternalAgent':
+      case 'ExternalAgent':
+        return faRobot;
+      case 'API':
+      case 'MicroService':
+        return faServer;
+      default:
+        return faCog;
+    }
+  }
+  
+  function getToolTypeColor(toolType: string) {
+    switch (toolType) {
+      case 'InternalAgent':
+        return 'text-blue-600';
+      case 'ExternalAgent':
+        return 'text-purple-600';
+      case 'API':
+        return 'text-green-600';
+      case 'ESBEndpoint':
+        return 'text-orange-600';
+      case 'LegacySystem':
+        return 'text-gray-600';
+      case 'MicroService':
+        return 'text-indigo-600';
+      default:
+        return 'text-gray-600';
     }
   }
 </script>
@@ -109,59 +141,95 @@
   
   <!-- Results -->
   {#if error}
-    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-      {error}
+    <div class="card bg-red-50 border-red-200">
+      <p class="text-red-700">{error}</p>
     </div>
   {/if}
   
   {#if hasSearched && !loading}
     <div class="card">
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex justify-between items-center mb-4">
         <h2 class="text-lg font-semibold">
-          Results ({results.length})
+          {results.length} Result{results.length !== 1 ? 's' : ''} Found
         </h2>
-        <div class="flex items-center text-sm text-gray-600">
+        <div class="flex items-center text-sm text-gray-500">
           <Fa icon={faClock} class="mr-1" />
           {searchTime}ms
         </div>
       </div>
       
       {#if results.length === 0}
-        <p class="text-gray-500 text-center py-8">No results found</p>
+        <p class="text-gray-500">No services found matching your query.</p>
       {:else}
         <div class="space-y-4">
-          {#each results as result}
+          {#each results as result, i}
             <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div class="flex items-start justify-between">
+              <div class="flex justify-between items-start mb-2">
                 <div class="flex-1">
-                  <div class="flex items-center">
-                    <Fa icon={faServer} class="mr-2 text-gray-400" />
-                    <h3 class="font-semibold text-lg">{result.service.name}</h3>
-                    <span class="ml-3 px-2 py-1 bg-primary-100 text-primary-700 text-xs rounded-full">
-                      Score: {result.score.toFixed(3)}
-                    </span>
-                  </div>
-                  <p class="text-gray-600 mt-1">{result.service.description}</p>
-                  
-                  {#if result.service.domains && result.service.domains.length > 0}
-                    <div class="mt-2 flex flex-wrap gap-1">
-                      {#each result.service.domains as domain}
-                        <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                          {domain}
-                        </span>
-                      {/each}
+                  <div class="flex items-center space-x-3">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                      {result.service.name}
+                    </h3>
+                    <div class="flex items-center space-x-2">
+                      <Fa 
+                        icon={getToolTypeIcon(result.service.tool_type)} 
+                        class="{getToolTypeColor(result.service.tool_type)} text-sm" 
+                        title={result.service.tool_type}
+                      />
+                      <span class="text-xs px-2 py-1 bg-gray-100 rounded">
+                        {result.service.tool_type}
+                      </span>
                     </div>
-                  {/if}
-                  
-                  {#if result.service.endpoint}
-                    <p class="text-sm text-gray-500 mt-2">
-                      Endpoint: <code class="bg-gray-100 px-1 rounded">{result.service.endpoint}</code>
-                    </p>
+                    {#if result.service.status === 'deprecated'}
+                      <span class="text-xs px-2 py-1 bg-red-100 text-red-800 rounded flex items-center">
+                        <Fa icon={faExclamationTriangle} class="mr-1" />
+                        Deprecated
+                      </span>
+                    {/if}
+                  </div>
+                  {#if result.service.version}
+                    <span class="text-sm text-gray-500">v{result.service.version}</span>
                   {/if}
                 </div>
-                <div class="ml-4 text-right">
-                  <p class="text-sm text-gray-500">Rank #{result.rank}</p>
+                <div class="flex items-center space-x-3 text-sm">
+                  <div class="flex items-center text-gray-500">
+                    <Fa icon={faEye} class="mr-1" />
+                    {result.service.visibility}
+                  </div>
+                  <div class="text-primary-600 font-medium">
+                    Score: {result.score.toFixed(3)}
+                  </div>
                 </div>
+              </div>
+              
+              <p class="text-gray-600 mb-3">{result.service.description}</p>
+              
+              <div class="flex flex-wrap gap-2">
+                {#if result.service.interaction_modes && result.service.interaction_modes.length > 0}
+                  <div class="flex items-center space-x-2">
+                    <span class="text-xs text-gray-500">Modes:</span>
+                    {#each result.service.interaction_modes as mode}
+                      <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">
+                        {mode}
+                      </span>
+                    {/each}
+                  </div>
+                {/if}
+                
+                {#if result.service.endpoint}
+                  <div class="text-xs text-gray-500">
+                    Endpoint: <code class="bg-gray-100 px-1 rounded">{result.service.endpoint}</code>
+                  </div>
+                {/if}
+              </div>
+              
+              <div class="mt-3 flex justify-between items-center">
+                <span class="text-xs text-gray-400">
+                  Rank #{i + 1} | Distance: {result.distance?.toFixed(4) || 'N/A'}
+                </span>
+                <a href="/services/{result.service.id}" class="text-sm text-primary-600 hover:text-primary-800">
+                  View Details →
+                </a>
               </div>
             </div>
           {/each}

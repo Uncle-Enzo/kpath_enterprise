@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KPATH Debug - Auth Test</title>
+</head>
+<body>
+    <h1>KPATH Authentication Debug</h1>
+    
+    <div id="status"></div>
+    
+    <h2>Login Test</h2>
+    <form id="loginForm">
+        <input type="email" id="email" placeholder="Email" value="admin@kpath.ai">
+        <input type="password" id="password" placeholder="Password" value="1234rt4rd">
+        <button type="submit">Login</button>
+    </form>
+    
+    <h2>Users API Test</h2>
+    <button id="testUsers">Test Users API</button>
+    <div id="usersResult"></div>
+    
+    <h2>Current Storage</h2>
+    <button id="checkStorage">Check Storage</button>
+    <div id="storageResult"></div>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+        const loginForm = document.getElementById('loginForm');
+        const testUsersBtn = document.getElementById('testUsers');
+        const usersResult = document.getElementById('usersResult');
+        const checkStorageBtn = document.getElementById('checkStorage');
+        const storageResult = document.getElementById('storageResult');
+        
+        function log(message) {
+            console.log(message);
+            statusDiv.innerHTML += '<p>' + message + '</p>';
+        }
+        
+        async function login(email, password) {
+            try {
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username: email, password: password }),
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    log('✅ Login successful');
+                    log('Token: ' + data.access_token.substring(0, 20) + '...');
+                    log('User: ' + JSON.stringify(data.user));
+                    
+                    // Store in localStorage
+                    localStorage.setItem('token', data.access_token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    return data;
+                } else {
+                    log('❌ Login failed: ' + JSON.stringify(data));
+                    return null;
+                }
+            } catch (error) {
+                log('❌ Login error: ' + error.message);
+                return null;
+            }
+        }
+        
+        async function testUsersAPI() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    log('❌ No token found');
+                    return;
+                }
+                
+                log('🔍 Testing users API with token: ' + token.substring(0, 20) + '...');
+                
+                const response = await fetch('/api/v1/users/', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                if (response.ok) {
+                    const users = await response.json();
+                    log('✅ Users API success: ' + users.length + ' users found');
+                    usersResult.innerHTML = '<pre>' + JSON.stringify(users, null, 2) + '</pre>';
+                } else {
+                    const error = await response.text();
+                    log('❌ Users API failed (' + response.status + '): ' + error);
+                    usersResult.innerHTML = '<pre>Error: ' + error + '</pre>';
+                }
+            } catch (error) {
+                log('❌ Users API error: ' + error.message);
+            }
+        }
+        
+        function checkStorage() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            storageResult.innerHTML = '<h3>Token:</h3><pre>' + (token || 'Not found') + '</pre>';
+            storageResult.innerHTML += '<h3>User:</h3><pre>' + (user || 'Not found') + '</pre>';
+            
+            if (token) {
+                try {
+                    // Decode JWT payload (just for debugging)
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    storageResult.innerHTML += '<h3>Token Payload:</h3><pre>' + JSON.stringify(payload, null, 2) + '</pre>';
+                } catch (e) {
+                    storageResult.innerHTML += '<p>Could not decode token</p>';
+                }
+            }
+        }
+        
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            await login(email, password);
+        });
+        
+        testUsersBtn.addEventListener('click', testUsersAPI);
+        checkStorageBtn.addEventListener('click', checkStorage);
+        
+        // Check storage on load
+        checkStorage();
+    </script>
+</body>
+</html>

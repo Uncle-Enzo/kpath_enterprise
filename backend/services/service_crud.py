@@ -1,6 +1,7 @@
 """
 Service CRUD operations
 """
+from datetime import datetime
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
@@ -18,7 +19,15 @@ class ServiceCRUD:
         description: str,
         endpoint: Optional[str] = None,
         version: Optional[str] = None,
-        status: str = "active"
+        status: str = "active",
+        tool_type: str = "API",
+        interaction_modes: Optional[List[str]] = None,
+        visibility: str = "internal",
+        deprecation_date: Optional[datetime] = None,
+        deprecation_notice: Optional[str] = None,
+        success_criteria: Optional[dict] = None,
+        default_timeout_ms: int = 30000,
+        default_retry_policy: Optional[dict] = None
     ) -> Service:
         """Create a new service"""
         service = Service(
@@ -26,7 +35,15 @@ class ServiceCRUD:
             description=description,
             endpoint=endpoint,
             version=version,
-            status=status
+            status=status,
+            tool_type=tool_type,
+            interaction_modes=interaction_modes,
+            visibility=visibility,
+            deprecation_date=deprecation_date,
+            deprecation_notice=deprecation_notice,
+            success_criteria=success_criteria,
+            default_timeout_ms=default_timeout_ms,
+            default_retry_policy=default_retry_policy
         )
         db.add(service)
         db.commit()

@@ -13,8 +13,17 @@
   }
   
   function logout() {
+    dropdownOpen = false;
     auth.logout();
     goto('/login');
+  }
+  
+  function toggleDropdown() {
+    dropdownOpen = !dropdownOpen;
+  }
+  
+  function closeDropdown() {
+    dropdownOpen = false;
   }
 </script>
 
@@ -33,24 +42,25 @@
     {#if $currentUser}
       <div class="relative">
         <button
-          on:click={() => dropdownOpen = !dropdownOpen}
+          on:click={toggleDropdown}
           class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
         >
           <Fa icon={faUser} class="text-gray-600" />
-          <span class="text-gray-700">{$currentUser.username}</span>
+          <span class="text-gray-700">{$currentUser.username || $currentUser.email}</span>
         </button>
         
         {#if dropdownOpen}
-          <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1">
+          <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 border">
             <div class="px-4 py-2 border-b">
-              <p class="text-sm text-gray-500">Role: {$currentUser.role}</p>
+              <p class="text-sm font-medium text-gray-900 truncate">{$currentUser.username || $currentUser.email}</p>
+              <p class="text-xs text-gray-500 capitalize">Role: {$currentUser.role}</p>
             </div>
             <button
               on:click={logout}
-              class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-2"
+              class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-2 text-gray-700"
             >
-              <Fa icon={faSignOutAlt} class="text-gray-600" />
-              <span>Logout</span>
+              <Fa icon={faSignOutAlt} class="text-gray-500 text-sm" />
+              <span class="text-sm">Sign Out</span>
             </button>
           </div>
         {/if}
@@ -59,4 +69,4 @@
   </div>
 </nav>
 
-<svelte:window on:click={() => dropdownOpen = false} />
+<svelte:window on:click={closeDropdown} />

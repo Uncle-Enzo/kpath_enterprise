@@ -47,7 +47,7 @@
   <h1 class="text-2xl font-bold text-gray-900">Generate New API Key</h1>
   
   {#if !generatedKey}
-    <form on:submit|preventDefault={generateKey} class="card space-y-4">
+    <form on:submit|preventDefault={generateKey} class="bg-white rounded-lg shadow-md p-6 space-y-4">
       {#if error}
         <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
           {error}
@@ -104,14 +104,14 @@
         <button
           type="submit"
           disabled={loading || !form.name}
-          class="btn btn-primary"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium disabled:opacity-50"
         >
           {loading ? 'Generating...' : 'Generate API Key'}
         </button>
       </div>
     </form>
   {:else}
-    <div class="card">
+    <div class="bg-white rounded-lg shadow-md p-6">
       <div class="text-center space-y-4">
         <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full">
           <Fa icon={faCheck} class="text-2xl text-green-600" />
@@ -142,7 +142,7 @@
         </div>
         
         <div class="pt-4">
-          <button on:click={done} class="btn btn-primary">
+          <button on:click={done} class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
             Done
           </button>
         </div>

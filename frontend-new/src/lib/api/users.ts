@@ -16,8 +16,9 @@ export interface UserListResponse {
 }
 
 export const usersApi = {
-  list: async (params?: PaginationParams): Promise<UserListResponse> => {
-    return api.get('/users', params);
+  list: async (params?: PaginationParams): Promise<User[]> => {
+    // Backend returns User[] directly, not wrapped in an object
+    return api.get('/users/', params);
   },
   
   get: async (id: number): Promise<User> => {
@@ -25,7 +26,7 @@ export const usersApi = {
   },
   
   create: async (data: UserCreateRequest): Promise<User> => {
-    return api.post('/users', data);
+    return api.post('/users/', data);
   },
   
   update: async (id: number, data: Partial<UserCreateRequest>): Promise<User> => {

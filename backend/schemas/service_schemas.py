@@ -2,8 +2,11 @@
 Pydantic schemas for API validation
 """
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, TYPE_CHECKING
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
+
+if TYPE_CHECKING:
+    from .integration_schemas import ServiceIntegrationDetails, ServiceAgentProtocols
 
 
 # Base schemas
@@ -14,6 +17,16 @@ class ServiceBase(BaseModel):
     endpoint: Optional[str] = None
     version: Optional[str] = None
     status: str = Field(default="active", pattern="^(active|inactive|deprecated)$")
+    
+    # New enterprise integration fields
+    tool_type: str = Field(default="API", pattern="^(InternalAgent|ExternalAgent|API|LegacySystem|ESBEndpoint|MicroService)$")
+    interaction_modes: Optional[List[str]] = None
+    visibility: str = Field(default="internal", pattern="^(internal|org-wide|public|restricted)$")
+    deprecation_date: Optional[datetime] = None
+    deprecation_notice: Optional[str] = None
+    success_criteria: Optional[Dict[str, Any]] = None
+    default_timeout_ms: int = Field(default=30000, ge=0)
+    default_retry_policy: Optional[Dict[str, Any]] = None
 
 
 class ServiceCreate(ServiceBase):
@@ -28,6 +41,16 @@ class ServiceUpdate(BaseModel):
     endpoint: Optional[str] = None
     version: Optional[str] = None
     status: Optional[str] = Field(None, pattern="^(active|inactive|deprecated)$")
+    
+    # New enterprise integration fields
+    tool_type: Optional[str] = Field(None, pattern="^(InternalAgent|ExternalAgent|API|LegacySystem|ESBEndpoint|MicroService)$")
+    interaction_modes: Optional[List[str]] = None
+    visibility: Optional[str] = Field(None, pattern="^(internal|org-wide|public|restricted)$")
+    deprecation_date: Optional[datetime] = None
+    deprecation_notice: Optional[str] = None
+    success_criteria: Optional[Dict[str, Any]] = None
+    default_timeout_ms: Optional[int] = Field(None, ge=0)
+    default_retry_policy: Optional[Dict[str, Any]] = None
 
 
 class ServiceCapabilityBase(BaseModel):
@@ -72,6 +95,8 @@ class Service(ServiceBase):
     updated_at: datetime
     capabilities: List[ServiceCapability] = []
     industries: List[ServiceIndustry] = []
+    integration_details: Optional["ServiceIntegrationDetails"] = None
+    agent_protocols: Optional["ServiceAgentProtocols"] = None
     
     model_config = ConfigDict(from_attributes=True)
 
@@ -87,7 +112,8 @@ class ServiceList(BaseModel):
 # User schemas
 class UserBase(BaseModel):
     """Base schema for users"""
-    email: EmailStr
+    email: str
+    username: Optional[str] = None
     role: str = Field(..., pattern="^(admin|editor|viewer|user)$")
     org_id: Optional[int] = None
     attributes: Optional[Dict[str, Any]] = Field(default_factory=dict)
@@ -100,7 +126,8 @@ class UserCreate(UserBase):
 
 class UserUpdate(BaseModel):
     """Schema for updating a user"""
-    email: Optional[EmailStr] = None
+    email: Optional[str] = None
+    username: Optional[str] = None
     role: Optional[str] = Field(None, pattern="^(admin|editor|viewer|user)$")
     org_id: Optional[int] = None
     attributes: Optional[Dict[str, Any]] = None
@@ -138,3 +165,8 @@ class AccessPolicy(AccessPolicyBase):
     created_at: datetime
     
     model_config = ConfigDict(from_attributes=True)
+
+
+# Forward reference resolution
+from .integration_schemas import ServiceIntegrationDetails, ServiceAgentProtocols
+Service.model_rebuild()

@@ -28,6 +28,16 @@ class Service(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    # New enterprise integration columns
+    tool_type = Column(String(50), default="API")
+    interaction_modes = Column(ARRAY(Text))
+    visibility = Column(String(20), default="internal")
+    deprecation_date = Column(DateTime)
+    deprecation_notice = Column(Text)
+    success_criteria = Column(JSON)
+    default_timeout_ms = Column(Integer, default=30000)
+    default_retry_policy = Column(JSON)
+    
     # Relationships
     capabilities = relationship("ServiceCapability", back_populates="service", cascade="all, delete-orphan")
     interactions = relationship("InteractionCapability", back_populates="service", cascade="all, delete-orphan")
@@ -35,9 +45,132 @@ class Service(Base):
     policies = relationship("AccessPolicy", back_populates="service", cascade="all, delete-orphan")
     versions = relationship("ServiceVersion", back_populates="service", cascade="all, delete-orphan")
     health_records = relationship("ServiceHealth", back_populates="service", cascade="all, delete-orphan")
+    integration_details = relationship("ServiceIntegrationDetails", back_populates="service", 
+                                     cascade="all, delete-orphan", uselist=False)
+    agent_protocols = relationship("ServiceAgentProtocols", back_populates="service", 
+                                 cascade="all, delete-orphan", uselist=False)
     
     __table_args__ = (
         CheckConstraint("status IN ('active', 'inactive', 'deprecated')", name="check_service_status"),
+        CheckConstraint("tool_type IN ('InternalAgent', 'ExternalAgent', 'API', 'LegacySystem', "
+                       "'ESBEndpoint', 'MicroService')", name="check_tool_type"),
+        CheckConstraint("visibility IN ('internal', 'org-wide', 'public', 'restricted')", 
+                       name="check_visibility"),
+    )
+
+
+class ServiceIntegrationDetails(Base):
+    """Service integration configuration details"""
+    __tablename__ = "service_integration_details"
+    
+    id = Column(Integer, primary_key=True)
+    service_id = Column(Integer, ForeignKey("services.id", ondelete="CASCADE"), unique=True)
+    
+    # Protocol Information
+    access_protocol = Column(String(50), nullable=False)
+    base_endpoint = Column(Text)
+    
+    # Authentication
+    auth_method = Column(String(50))
+    auth_config = Column(JSON)
+    auth_endpoint = Column(Text)
+    
+    # Rate Limiting & Performance
+    rate_limit_requests = Column(Integer)
+    rate_limit_window_seconds = Column(Integer)
+    max_concurrent_requests = Column(Integer)
+    circuit_breaker_config = Column(JSON)
+    
+    # Request/Response Configuration
+    default_headers = Column(JSON)
+    request_content_type = Column(String(100), default="application/json")
+    response_content_type = Column(String(100), default="application/json")
+    request_transform = Column(JSON)
+    response_transform = Column(JSON)
+    
+    # ESB Specific Fields
+    esb_type = Column(String(50))
+    esb_service_name = Column(Text)
+    esb_routing_key = Column(Text)
+    esb_operation = Column(Text)
+    esb_adapter_type = Column(String(50))
+    esb_namespace = Column(Text)
+    esb_version = Column(String(20))
+    
+    # Health Check
+    health_check_endpoint = Column(Text)
+    health_check_interval_seconds = Column(Integer)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    service = relationship("Service", back_populates="integration_details")
+
+
+class ServiceAgentProtocols(Base):
+    """Agent-specific communication protocols"""
+    __tablename__ = "service_agent_protocols"
+    
+    id = Column(Integer, primary_key=True)
+    service_id = Column(Integer, ForeignKey("services.id", ondelete="CASCADE"), unique=True)
+    
+    # Protocol Information
+    message_protocol = Column(String(50), nullable=False)
+    protocol_version = Column(String(20))
+    expected_input_format = Column(Text)
+    response_style = Column(String(50))
+    
+    # Communication Details
+    message_examples = Column(JSON)
+    tool_schema = Column(JSON)
+    input_validation_rules = Column(JSON)
+    output_parsing_rules = Column(JSON)
+    
+    # Capabilities
+    requires_session_state = Column(Boolean, default=False)
+    max_context_length = Column(Integer)
+    supported_languages = Column(ARRAY(String))
+    supports_streaming = Column(Boolean, default=False)
+    supports_async = Column(Boolean, default=False)
+    supports_batch = Column(Boolean, default=False)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    service = relationship("Service", back_populates="agent_protocols")
+
+
+class ServiceIndustries(Base):
+    """Service industry classifications and use cases"""
+    __tablename__ = "service_industries"
+    
+    id = Column(Integer, primary_key=True)
+    service_id = Column(Integer, ForeignKey("services.id", ondelete="CASCADE"))
+    
+    # Industry Classification
+    industry = Column(String(100), nullable=False)
+    sub_industry = Column(String(100))
+    use_case_category = Column(String(100))
+    
+    # Use Case Details
+    use_case_description = Column(Text)
+    business_value = Column(Text)
+    typical_consumers = Column(ARRAY(String))
+    
+    # Relevance & Priority
+    relevance_score = Column(Integer)
+    priority_rank = Column(Integer)
+    compliance_frameworks = Column(ARRAY(String))
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    service = relationship("Service")
+    
+    __table_args__ = (
+        UniqueConstraint("service_id", "industry", "use_case_category", 
+                        name="uq_service_industry_usecase"),
     )
 
 
@@ -76,7 +209,7 @@ class InteractionCapability(Base):
 
 
 class ServiceIndustry(Base):
-    """Domain classification for services"""
+    """Domain classification for services (legacy table)"""
     __tablename__ = "service_industry"
     
     id = Column(Integer, primary_key=True)
@@ -97,6 +230,7 @@ class User(Base):
     
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True, nullable=False)
+    username = Column(String, unique=True, nullable=True)  # Add username field
     role = Column(String)
     org_id = Column(Integer)
     attributes = Column(JSON, default={})

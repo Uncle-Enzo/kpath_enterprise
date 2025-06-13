@@ -31,12 +31,14 @@ class UserCRUD:
         email: str,
         password: str,
         role: str = "user",
+        username: Optional[str] = None,
         org_id: Optional[int] = None,
         attributes: Optional[dict] = None
     ) -> User:
         """Create a new user with hashed password"""
         user = User(
             email=email,
+            username=username,
             role=role,
             org_id=org_id,
             attributes=attributes or {},

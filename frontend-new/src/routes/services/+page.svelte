@@ -3,7 +3,7 @@
   import { servicesApi } from '$lib/api/services';
   import type { Service } from '$lib/types';
   import Fa from 'svelte-fa';
-  import { faPlus, faEdit, faTrash, faSearch } from '@fortawesome/free-solid-svg-icons';
+  import { faPlus, faEdit, faTrash, faSearch, faCog, faRobot, faServer, faFileImport, faBook } from '@fortawesome/free-solid-svg-icons';
   
   let services: Service[] = [];
   let loading = true;
@@ -11,11 +11,17 @@
   let searchQuery = '';
   let currentPage = 1;
   let totalPages = 1;
+  let filterToolType = '';
+  let filterVisibility = '';
   
-  $: filteredServices = services.filter(service => 
-    service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    service.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  $: filteredServices = services.filter(service => {
+    const matchesSearch = 
+      service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      service.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesToolType = !filterToolType || service.tool_type === filterToolType;
+    const matchesVisibility = !filterVisibility || service.visibility === filterVisibility;
+    return matchesSearch && matchesToolType && matchesVisibility;
+  });
   
   async function loadServices() {
     try {
@@ -45,28 +51,90 @@
     }
   }
   
+  function getToolTypeIcon(toolType: string) {
+    switch (toolType) {
+      case 'InternalAgent':
+      case 'ExternalAgent':
+        return faRobot;
+      case 'API':
+      case 'MicroService':
+        return faServer;
+      default:
+        return faCog;
+    }
+  }
+  
+  function getToolTypeColor(toolType: string) {
+    switch (toolType) {
+      case 'InternalAgent':
+        return 'text-blue-600';
+      case 'ExternalAgent':
+        return 'text-purple-600';
+      case 'API':
+        return 'text-green-600';
+      case 'ESBEndpoint':
+        return 'text-orange-600';
+      case 'LegacySystem':
+        return 'text-gray-600';
+      case 'MicroService':
+        return 'text-indigo-600';
+      default:
+        return 'text-gray-600';
+    }
+  }
+  
   onMount(loadServices);
 </script>
 
 <div class="space-y-6">
   <div class="flex justify-between items-center">
     <h1 class="text-2xl font-bold text-gray-900">Services</h1>
-    <a href="/services/new" class="btn btn-primary">
-      <Fa icon={faPlus} class="mr-2" />
-      Add Service
-    </a>
+    <div class="flex space-x-3">
+      <a href="/services/import-guide" class="btn btn-secondary">
+        <Fa icon={faBook} class="mr-2" />
+        Import Guide
+      </a>
+      <a href="/services/import" class="btn btn-secondary">
+        <Fa icon={faFileImport} class="mr-2" />
+        Import Services
+      </a>
+      <a href="/services/new" class="btn btn-primary">
+        <Fa icon={faPlus} class="mr-2" />
+        Add Service
+      </a>
+    </div>
   </div>
   
-  <!-- Search Bar -->
+  <!-- Filters and Search -->
   <div class="card">
-    <div class="relative">
-      <Fa icon={faSearch} class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-      <input
-        type="text"
-        bind:value={searchQuery}
-        placeholder="Search services..."
-        class="input pl-10"
-      />
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="relative">
+        <Fa icon={faSearch} class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          bind:value={searchQuery}
+          placeholder="Search services..."
+          class="input pl-10"
+        />
+      </div>
+      
+      <select bind:value={filterToolType} class="input">
+        <option value="">All Tool Types</option>
+        <option value="API">API Endpoint</option>
+        <option value="InternalAgent">Internal Agent</option>
+        <option value="ExternalAgent">External Agent</option>
+        <option value="ESBEndpoint">ESB Endpoint</option>
+        <option value="LegacySystem">Legacy System</option>
+        <option value="MicroService">Microservice</option>
+      </select>
+      
+      <select bind:value={filterVisibility} class="input">
+        <option value="">All Visibility Levels</option>
+        <option value="internal">Internal</option>
+        <option value="org-wide">Organization Wide</option>
+        <option value="public">Public</option>
+        <option value="restricted">Restricted</option>
+      </select>
     </div>
   </div>
   
@@ -93,13 +161,19 @@
                 Name
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Type
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Description
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Version
+                Visibility
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Modes
               </th>
               <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
@@ -111,17 +185,42 @@
               <tr class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm font-medium text-gray-900">{service.name}</div>
-                </td>
-                <td class="px-6 py-4">
-                  <div class="text-sm text-gray-500">{service.description}</div>
+                  {#if service.version}
+                    <div class="text-xs text-gray-500">v{service.version}</div>
+                  {/if}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {service.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                  <div class="flex items-center">
+                    <Fa icon={getToolTypeIcon(service.tool_type)} class="{getToolTypeColor(service.tool_type)} mr-2" />
+                    <span class="text-sm text-gray-900">{service.tool_type}</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-500 max-w-xs truncate">{service.description}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {service.status === 'active' ? 'bg-green-100 text-green-800' : service.status === 'deprecated' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}">
                     {service.status}
                   </span>
+                  {#if service.deprecation_notice}
+                    <div class="text-xs text-red-600 mt-1">Deprecated</div>
+                  {/if}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {service.version || '-'}
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm text-gray-900">{service.visibility}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  {#if service.interaction_modes && service.interaction_modes.length > 0}
+                    <div class="flex flex-wrap gap-1">
+                      {#each service.interaction_modes as mode}
+                        <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
+                          {mode}
+                        </span>
+                      {/each}
+                    </div>
+                  {:else}
+                    <span class="text-sm text-gray-400">-</span>
+                  {/if}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <a href="/services/{service.id}" class="text-primary-600 hover:text-primary-900 mr-3">

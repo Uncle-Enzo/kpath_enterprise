@@ -66,6 +66,7 @@ async def create_user(
     user = UserCRUD.create_user(
         db,
         email=user_data.email,
+        username=user_data.username,
         password=user_data.password,
         role=user_data.role,
         org_id=user_data.org_id,

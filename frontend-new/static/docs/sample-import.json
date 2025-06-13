@@ -1,0 +1,169 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "description": "Sample service import for demonstration",
+    "created_by": "admin",
+    "created_at": "2025-06-13T22:00:00Z",
+    "tags": ["demo", "example", "initial-setup"]
+  },
+  "services": [
+    {
+      "name": "Customer Analytics API",
+      "description": "Advanced customer analytics and insights API providing real-time customer behavior analysis",
+      "endpoint": "https://api.company.com/customer-analytics/v1",
+      "version": "1.2.0",
+      "status": "active",
+      "tool_type": "API",
+      "interaction_modes": ["sync", "async"],
+      "visibility": "org-wide",
+      "default_timeout_ms": 15000,
+      "success_criteria": {
+        "status_codes": [200, 201, 202],
+        "max_response_time_ms": 2000,
+        "min_success_rate": 0.99
+      },
+      "default_retry_policy": {
+        "max_retries": 3,
+        "backoff_multiplier": 1.5,
+        "initial_interval_ms": 500
+      },
+      "integration_details": {
+        "access_protocol": "REST",
+        "base_endpoint": "https://api.company.com/customer-analytics/v1",
+        "auth_method": "OAuth2",
+        "auth_endpoint": "https://auth.company.com/oauth2/token",
+        "rate_limit_requests": 1000,
+        "rate_limit_window_seconds": 3600,
+        "max_concurrent_requests": 50,
+        "request_content_type": "application/json",
+        "response_content_type": "application/json",
+        "health_check_endpoint": "/health",
+        "health_check_interval_seconds": 30
+      },
+      "capabilities": [
+        {
+          "capability_name": "customer_segmentation",
+          "capability_desc": "Segment customers based on behavior patterns and demographics"
+        },
+        {
+          "capability_name": "churn_prediction",
+          "capability_desc": "Predict customer churn probability using ML models"
+        },
+        {
+          "capability_name": "lifetime_value",
+          "capability_desc": "Calculate customer lifetime value projections"
+        }
+      ],
+      "industries": [
+        {
+          "industry": "Retail",
+          "sub_industry": "E-commerce",
+          "use_case_category": "Customer Intelligence",
+          "use_case_description": "Analyze customer behavior for personalized marketing",
+          "business_value": "Increase customer retention by 25%",
+          "typical_consumers": ["Marketing Teams", "Sales Teams", "Product Teams"],
+          "relevance_score": 95,
+          "priority_rank": 1
+        }
+      ]
+    },
+    {
+      "name": "AI Assistant Agent",
+      "description": "Intelligent conversational agent for customer support and assistance",
+      "endpoint": "https://agents.company.com/support-agent",
+      "version": "2.1.0",
+      "status": "active",
+      "tool_type": "InternalAgent",
+      "interaction_modes": ["sync", "stream"],
+      "visibility": "internal",
+      "default_timeout_ms": 30000,
+      "integration_details": {
+        "access_protocol": "WebSocket",
+        "base_endpoint": "wss://agents.company.com/support-agent",
+        "auth_method": "JWT",
+        "rate_limit_requests": 100,
+        "rate_limit_window_seconds": 60
+      },
+      "agent_protocols": {
+        "message_protocol": "OpenAI",
+        "protocol_version": "1.0",
+        "response_style": "conversational",
+        "requires_session_state": true,
+        "max_context_length": 8192,
+        "supported_languages": ["English", "Spanish", "French"],
+        "supports_streaming": true,
+        "supports_async": true,
+        "supports_batch": false
+      },
+      "capabilities": [
+        {
+          "capability_name": "natural_language_processing",
+          "capability_desc": "Process and understand natural language queries"
+        },
+        {
+          "capability_name": "knowledge_retrieval",
+          "capability_desc": "Retrieve relevant information from knowledge base"
+        },
+        {
+          "capability_name": "task_automation",
+          "capability_desc": "Automate routine customer service tasks"
+        }
+      ],
+      "industries": [
+        {
+          "industry": "Technology",
+          "sub_industry": "Software",
+          "use_case_category": "Customer Support",
+          "use_case_description": "Provide 24/7 automated customer support",
+          "business_value": "Reduce support costs by 40%",
+          "typical_consumers": ["Support Teams", "Customers"],
+          "relevance_score": 90,
+          "priority_rank": 2
+        }
+      ]
+    },
+    {
+      "name": "Legacy ERP Integration",
+      "description": "Integration layer for legacy ERP system data access",
+      "endpoint": "https://erp.company.com/api/v1",
+      "version": "1.0.0",
+      "status": "active",
+      "tool_type": "LegacySystem",
+      "interaction_modes": ["sync"],
+      "visibility": "restricted",
+      "default_timeout_ms": 45000,
+      "integration_details": {
+        "access_protocol": "SOAP",
+        "base_endpoint": "https://erp.company.com/api/v1",
+        "auth_method": "Basic",
+        "rate_limit_requests": 50,
+        "rate_limit_window_seconds": 300,
+        "max_concurrent_requests": 5,
+        "request_content_type": "application/soap+xml",
+        "response_content_type": "application/soap+xml"
+      },
+      "capabilities": [
+        {
+          "capability_name": "financial_data_access",
+          "capability_desc": "Access financial records and transactions"
+        },
+        {
+          "capability_name": "inventory_management",
+          "capability_desc": "Manage inventory levels and stock movements"
+        }
+      ],
+      "industries": [
+        {
+          "industry": "Manufacturing",
+          "sub_industry": "Enterprise Resource Planning",
+          "use_case_category": "Data Integration",
+          "use_case_description": "Integrate legacy ERP data with modern applications",
+          "business_value": "Modernize data access without ERP replacement",
+          "typical_consumers": ["Finance Teams", "Operations Teams"],
+          "relevance_score": 75,
+          "priority_rank": 3
+        }
+      ]
+    }
+  ]
+}

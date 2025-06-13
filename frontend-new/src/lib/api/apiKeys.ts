@@ -13,11 +13,11 @@ export interface APIKeyUsageResponse {
 
 export const apiKeysApi = {
   list: async (): Promise<APIKey[]> => {
-    return api.get('/api-keys');
+    return api.get('/api-keys/');
   },
   
   create: async (data: APIKeyCreate): Promise<APIKeyResponse> => {
-    return api.post('/api-keys', data);
+    return api.post('/api-keys/', data);
   },
   
   revoke: async (keyId: number): Promise<{ message: string }> => {

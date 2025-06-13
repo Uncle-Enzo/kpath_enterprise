@@ -44,7 +44,7 @@
       <p class="mt-2 text-gray-600">Sign in to your account</p>
     </div>
     
-    <div class="card">
+    <div class="bg-white rounded-lg shadow-md p-6">
       <form on:submit|preventDefault={handleSubmit} class="space-y-6">
         {#if error}
           <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
@@ -52,22 +52,17 @@
           </div>
         {/if}
         
-        <!-- Debug info -->
-        <div class="text-xs text-gray-500">
-          Debug: Form submitted = {loading}
-        </div>
-        
         <div>
           <label for="username" class="block text-sm font-medium text-gray-700">
-            Username
+            Email Address
           </label>
           <input
             id="username"
-            type="text"
+            type="email"
             bind:value={form.username}
             required
-            class="input mt-1"
-            placeholder="Enter your username"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 mt-1"
+            placeholder="Enter your email address"
           />
         </div>
         
@@ -80,7 +75,7 @@
             type="password"
             bind:value={form.password}
             required
-            class="input mt-1"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 mt-1"
             placeholder="Enter your password"
           />
         </div>
@@ -88,7 +83,7 @@
         <button
           type="submit"
           disabled={loading}
-          class="w-full btn btn-primary"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium disabled:opacity-50"
         >
           {loading ? 'Signing in...' : 'Sign in'}
         </button>
