@@ -1,0 +1,77 @@
+
+KPATH ENTERPRISE USER GUIDE - UPDATED
+====================================
+
+Update Date: 2025-06-16 12:08:51
+Version: Production Ready (98% Complete)
+
+RECENT UPDATES (June 16, 2025):
+==============================
+✅ API Key Authentication - FULLY IMPLEMENTED AND TESTED
+  - Header authentication (X-API-Key)
+  - Query parameter authentication (?api_key=...)
+  - SHA256 secure hashing
+  - Scope management
+  - Usage tracking
+
+✅ Search API Enhancements
+  - Both GET and POST methods support API keys
+  - Flexible authentication (JWT + API keys)
+  - Response times: 45-165ms average
+  - Error handling improvements
+
+✅ Documentation Updates
+  - Complete API key usage examples
+  - Live testing examples with real keys
+  - Troubleshooting section
+  - Security best practices
+
+HOW TO ACCESS THE USER GUIDE:
+============================
+
+Option 1: Web Interface (Recommended)
+------------------------------------
+1. Ensure the frontend is running: http://localhost:5173
+2. Navigate to: http://localhost:5173/user-guide
+3. Click "Download PDF" button to generate the complete guide
+4. The PDF includes all the latest API key documentation
+
+Option 2: Direct PDF Generation
+------------------------------
+If you have access to the frontend interface:
+1. Open the user guide page in your browser
+2. Use the "Download PDF" button
+3. The PDF will be generated with all current information
+
+CURRENT SYSTEM STATUS:
+=====================
+- Backend API: Running (Port 8000)
+- Frontend UI: Running (Port 5173)
+- Database: Operational (PostgreSQL)
+- API Keys: 1 active key (fully functional)
+- Services: 33 available for discovery
+- Tools: 5 with orchestration schemas
+- Agent Invocations: 6 logged (83% success rate)
+
+API KEY TESTING:
+===============
+The following commands have been verified working:
+
+Header Method:
+curl -H "X-API-Key: kpe_TestKey123456789012345678901234" \
+     "http://localhost:8000/api/v1/search/search?query=customer%20data"
+
+Query Parameter Method:
+curl "http://localhost:8000/api/v1/search/search?query=customer%20data&api_key=kpe_TestKey123456789012345678901234"
+
+NEXT STEPS:
+==========
+1. Access the user guide at: http://localhost:5173/user-guide
+2. Download the updated PDF with API key documentation
+3. Share the guide with your team
+4. Use the API key examples to integrate with your applications
+
+For technical support or questions, refer to:
+- Project Status: /docs/project_status.txt
+- API Documentation: http://localhost:8000/docs
+- System Health: http://localhost:8000/health

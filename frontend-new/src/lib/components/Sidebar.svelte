@@ -9,7 +9,8 @@
     faUsers, 
     faKey,
     faCog,
-    faChartBar
+    faChartBar,
+    faBook
   } from '@fortawesome/free-solid-svg-icons';
   
   export let open: boolean;
@@ -21,6 +22,7 @@
     { icon: faUsers, label: 'Users', href: '/users', adminOnly: true },
     { icon: faKey, label: 'API Keys', href: '/api-keys', adminOnly: false },
     { icon: faChartBar, label: 'Analytics', href: '/analytics', adminOnly: false },
+    { icon: faBook, label: 'User Guide', href: '/user-guide', adminOnly: false },
     { icon: faCog, label: 'Settings', href: '/settings', adminOnly: true },
   ];
   

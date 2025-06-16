@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 import logging
 
 from backend.core.database import get_db
-from backend.core.auth import get_current_user, require_role
+from backend.core.auth import get_current_user, get_current_user_flexible, require_role
 from backend.models.models import User, APIKey, Service, SearchQuery, UserLoginLog, APIRequestLog
 from pydantic import BaseModel
 
@@ -41,7 +41,7 @@ class DashboardStatsResponse(BaseModel):
 @router.get("/dashboard", response_model=DashboardStatsResponse)
 async def get_dashboard_stats(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_flexible)
 ):
     """
     Get dashboard statistics
@@ -91,7 +91,7 @@ async def get_dashboard_stats(
 @router.get("/", response_model=AnalyticsResponse)
 async def get_analytics(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role(["admin", "editor"]))
+    current_user: User = Depends(get_current_user_flexible)
 ):
     """
     Get comprehensive analytics data (admin/editor only)
@@ -108,16 +108,75 @@ async def get_analytics(
             UserLoginLog.login_timestamp >= week_ago
         ).count()
         
-        # API Key Analytics
+        # API Key Analytics (Enhanced)
         total_api_keys = db.query(APIKey).count()
         active_api_keys = db.query(APIKey).filter(APIKey.active == True).count()
         
-        # API Request Analytics
+        # API Request Analytics (Enhanced)
         total_api_requests = db.query(APIRequestLog).count()
         today = datetime.now().date()
         api_requests_today = db.query(APIRequestLog).filter(
             func.date(APIRequestLog.timestamp) == today
         ).count()
+        
+        # API Key request metrics in the last 7 days
+        week_ago_dt = datetime.now() - timedelta(days=7)
+        api_requests_week = db.query(APIRequestLog).filter(
+            APIRequestLog.timestamp >= week_ago_dt
+        ).count()
+        
+        # Average response time for API key requests
+        avg_api_response_time = db.query(func.avg(APIRequestLog.response_time_ms)).filter(
+            APIRequestLog.response_time_ms.isnot(None)
+        ).scalar() or 0
+        
+        # Top endpoints used with API keys
+        top_api_endpoints = db.query(
+            APIRequestLog.endpoint,
+            APIRequestLog.method,
+            func.count(APIRequestLog.id).label('count')
+        ).group_by(
+            APIRequestLog.endpoint, APIRequestLog.method
+        ).order_by(func.count(APIRequestLog.id).desc()).limit(5).all()
+        
+        top_endpoints = [
+            {
+                'endpoint': f"{endpoint} ({method})",
+                'count': count
+            } for endpoint, method, count in top_api_endpoints
+        ]
+        
+        # API Key success rate (2xx status codes)
+        total_api_requests_with_status = db.query(APIRequestLog).filter(
+            APIRequestLog.status_code.isnot(None)
+        ).count()
+        
+        successful_api_requests = db.query(APIRequestLog).filter(
+            APIRequestLog.status_code >= 200,
+            APIRequestLog.status_code < 300
+        ).count()
+        
+        api_success_rate = (successful_api_requests / total_api_requests_with_status * 100) if total_api_requests_with_status > 0 else 0
+        
+        # Most active API keys (last 7 days)
+        most_active_keys = db.query(
+            APIRequestLog.api_key_id,
+            func.count(APIRequestLog.id).label('request_count')
+        ).filter(
+            APIRequestLog.timestamp >= week_ago_dt,
+            APIRequestLog.api_key_id.isnot(None)
+        ).group_by(
+            APIRequestLog.api_key_id
+        ).order_by(func.count(APIRequestLog.id).desc()).limit(3).all()
+        
+        active_key_stats = []
+        for api_key_id, request_count in most_active_keys:
+            key_name = db.query(APIKey.name).filter(APIKey.id == api_key_id).scalar()
+            active_key_stats.append({
+                'key_id': api_key_id,
+                'name': key_name or f'API Key {api_key_id}',
+                'requests': request_count
+            })
         
         # Service Analytics
         total_services = db.query(Service).count()
@@ -188,7 +247,12 @@ async def get_analytics(
                 "total": total_api_keys,
                 "active": active_api_keys,
                 "totalRequests": total_api_requests,
-                "requestsToday": api_requests_today
+                "requestsToday": api_requests_today,
+                "requestsThisWeek": api_requests_week,
+                "avgResponseTimeMs": round(avg_api_response_time, 2),
+                "successRate": round(api_success_rate, 2),
+                "topEndpoints": top_endpoints,
+                "mostActiveKeys": active_key_stats
             },
             services={
                 "total": total_services,

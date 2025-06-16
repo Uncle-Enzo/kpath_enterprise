@@ -12,7 +12,10 @@ import time
 from datetime import datetime
 
 from backend.core.database import get_db
-from backend.core.auth import get_current_user, get_current_user_flexible
+from backend.core.auth import (
+    get_current_user, get_current_user_flexible, 
+    oauth2_scheme, api_key_header
+)
 from backend.schemas.search import (
     SearchRequest, SearchResponse, SearchResultSchema,
     SearchStatusResponse, IndexRebuildRequest, SearchFeedbackRequest
@@ -80,6 +83,21 @@ async def search_services(
         # Calculate search time
         search_time_ms = int((time.time() - start_time) * 1000)
         
+        # Log API key usage if applicable
+        if hasattr(current_user, 'api_key_info') and current_user.api_key_info:
+            try:
+                from api_key_manager_fixed import APIKeyManager
+                api_manager = APIKeyManager(db)
+                api_manager.log_api_request(
+                    api_key_id=current_user.api_key_info['key_id'],
+                    endpoint="/api/v1/search/search",
+                    method="POST",
+                    status_code=200,
+                    response_time_ms=search_time_ms
+                )
+            except Exception as log_error:
+                logger.warning(f"Failed to log API key request: {log_error}")
+        
         # Log search query for analytics
         try:
             search_log = SearchQueryLog(
@@ -119,6 +137,21 @@ async def search_services(
         )
         
     except Exception as e:
+        # Log failed API key request
+        if hasattr(current_user, 'api_key_info') and current_user.api_key_info:
+            try:
+                from api_key_manager_fixed import APIKeyManager
+                api_manager = APIKeyManager(db)
+                api_manager.log_api_request(
+                    api_key_id=current_user.api_key_info['key_id'],
+                    endpoint="/api/v1/search/search",
+                    method="POST",
+                    status_code=500,
+                    response_time_ms=int((time.time() - start_time) * 1000) if 'start_time' in locals() else 0
+                )
+            except:
+                pass
+        
         logger.error(f"Search error: {e}")
         raise HTTPException(status_code=500, detail="Search failed")
 
@@ -130,24 +163,66 @@ async def search_services_get(
     min_score: float = Query(0.0, ge=0.0, le=1.0, description="Minimum relevance score"),
     domains: Optional[List[str]] = Query(None, description="Filter by domains"),
     capabilities: Optional[List[str]] = Query(None, description="Filter by capabilities"),
+    api_key: Optional[str] = Query(None, description="API key for authentication (alternative to X-API-Key header)"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user_flexible)
+    token: Optional[str] = Depends(oauth2_scheme),
+    header_api_key: Optional[str] = Depends(api_key_header)
 ):
     """
     Perform semantic search for services (GET method).
     
     This endpoint is ideal for API key authentication as it accepts query parameters.
     
-    ### Authentication:
+    ### Authentication Options:
     - **JWT Token**: Include in Authorization header as "Bearer {token}"
-    - **API Key**: Include in X-API-Key header
+    - **API Key Header**: Include in X-API-Key header
+    - **API Key Parameter**: Include as query parameter ?api_key=your_key
     
     ### Example:
     ```
-    GET /api/v1/search?query=customer%20data&limit=10
-    Headers: X-API-Key: kpe_your_api_key_here
+    GET /api/v1/search?query=customer%20data&limit=10&api_key=kpe_your_api_key_here
     ```
     """
+    
+    # Handle authentication manually to support query parameter API key
+    current_user = None
+    
+    # Try header API key first
+    if header_api_key:
+        from api_key_manager_fixed import APIKeyManager
+        api_key_manager = APIKeyManager(db)
+        key_info = api_key_manager.validate_api_key(header_api_key)
+        if key_info:
+            current_user = db.query(User).filter(User.id == key_info['user_id']).first()
+            if current_user:
+                current_user.api_key_info = key_info
+    
+    # Try query parameter API key if header didn't work
+    if not current_user and api_key:
+        from api_key_manager_fixed import APIKeyManager
+        api_key_manager = APIKeyManager(db)
+        key_info = api_key_manager.validate_api_key(api_key)
+        if key_info:
+            current_user = db.query(User).filter(User.id == key_info['user_id']).first()
+            if current_user:
+                current_user.api_key_info = key_info
+    
+    # Try JWT token if no API key worked
+    if not current_user and token:
+        try:
+            from backend.core.auth import get_current_user
+            current_user = await get_current_user(token, db)
+        except:
+            pass
+    
+    # If no authentication method worked, raise error
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     # Create request object from query parameters
     request = SearchRequest(
         query=query,
@@ -158,7 +233,24 @@ async def search_services_get(
     )
     
     # Use the same logic as POST endpoint
-    return await search_services(request, db, current_user)
+    response = await search_services(request, db, current_user)
+    
+    # Log API key usage for GET requests
+    if hasattr(current_user, 'api_key_info') and current_user.api_key_info:
+        try:
+            from api_key_manager_fixed import APIKeyManager
+            api_manager = APIKeyManager(db)
+            api_manager.log_api_request(
+                api_key_id=current_user.api_key_info['key_id'],
+                endpoint="/api/v1/search/search",
+                method="GET",
+                status_code=200,
+                response_time_ms=response.search_time_ms
+            )
+        except Exception as log_error:
+            logger.warning(f"Failed to log API key request: {log_error}")
+    
+    return response
 
 
 @router.get("/search/status", response_model=SearchStatusResponse)

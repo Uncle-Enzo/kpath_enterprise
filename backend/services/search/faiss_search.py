@@ -478,10 +478,52 @@ class FAISSSearchService(SearchService):
                     'id': service.id,
                     'name': service.name,
                     'description': service.description,
+                    'endpoint': service.endpoint,
+                    'version': service.version,
                     'status': service.status,
+                    'tool_type': service.tool_type,
+                    'visibility': service.visibility,
+                    'interaction_modes': service.interaction_modes,
                     'capabilities': [c.capability_desc for c in service.capabilities],
                     'domains': [d.domain for d in service.industries],
-                    'tags': getattr(service, 'tags', []) or []
+                    'tags': getattr(service, 'tags', []) or [],
+                    
+                    # Agent Orchestration Details
+                    'agent_protocol': service.agent_protocol,
+                    'auth_type': service.auth_type,
+                    'auth_config': service.auth_config,
+                    'tool_recommendations': service.tool_recommendations,
+                    'agent_capabilities': service.agent_capabilities,
+                    'communication_patterns': service.communication_patterns,
+                    'orchestration_metadata': service.orchestration_metadata,
+                    
+                    # Performance & SLA
+                    'default_timeout_ms': service.default_timeout_ms,
+                    'default_retry_policy': service.default_retry_policy,
+                    'success_criteria': service.success_criteria,
+                    
+                    # Integration Details (if available)
+                    'integration_details': {
+                        'access_protocol': service.integration_details.access_protocol if service.integration_details else None,
+                        'base_endpoint': service.integration_details.base_endpoint if service.integration_details else None,
+                        'auth_method': service.integration_details.auth_method if service.integration_details else None,
+                        'rate_limit_requests': service.integration_details.rate_limit_requests if service.integration_details else None,
+                        'rate_limit_window_seconds': service.integration_details.rate_limit_window_seconds if service.integration_details else None,
+                        'max_concurrent_requests': service.integration_details.max_concurrent_requests if service.integration_details else None,
+                        'health_check_endpoint': service.integration_details.health_check_endpoint if service.integration_details else None,
+                    } if service.integration_details else None,
+                    
+                    # Agent Protocol Details (if available)
+                    'agent_protocol_details': {
+                        'message_protocol': service.agent_protocols.message_protocol if service.agent_protocols else None,
+                        'protocol_version': service.agent_protocols.protocol_version if service.agent_protocols else None,
+                        'expected_input_format': service.agent_protocols.expected_input_format if service.agent_protocols else None,
+                        'response_style': service.agent_protocols.response_style if service.agent_protocols else None,
+                        'supports_streaming': service.agent_protocols.supports_streaming if service.agent_protocols else None,
+                        'supports_async': service.agent_protocols.supports_async if service.agent_protocols else None,
+                        'supports_batch': service.agent_protocols.supports_batch if service.agent_protocols else None,
+                        'max_context_length': service.agent_protocols.max_context_length if service.agent_protocols else None,
+                    } if service.agent_protocols else None
                 },
                 rank=rank + 1
             )

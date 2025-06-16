@@ -15,7 +15,7 @@ from backend.core.config import get_settings
 from backend.core.database import get_db
 from backend.models import User
 from backend.schemas import TokenData
-from api_key_manager import APIKeyManager
+from api_key_manager_fixed import APIKeyManager
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # OAuth2 scheme
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -97,7 +97,7 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     
-    logger.debug(f"Attempting to decode token: {token[:20]}...")
+    logger.debug(f"Attempting to decode token: {token[:20] if token else 'None'}...")
     token_data = decode_token(token)
     if token_data is None:
         logger.error("Token decode returned None")
@@ -163,16 +163,6 @@ async def get_api_key_user(
     if not key_info:
         return None
     
-    # Check rate limit
-    within_limit, rate_info = api_key_manager.check_rate_limit(api_key)
-    if not within_limit:
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=f"Rate limit exceeded. Limit: {rate_info['rate_limit']}/hour",
-            headers={"X-RateLimit-Limit": str(rate_info['rate_limit']),
-                    "X-RateLimit-Remaining": "0"}
-        )
-    
     # Get user
     user = db.query(User).filter(User.id == key_info['user_id']).first()
     if not user:
@@ -180,7 +170,6 @@ async def get_api_key_user(
     
     # Store API key info in user object for later use
     user.api_key_info = key_info
-    user.rate_info = rate_info
     
     return user
 

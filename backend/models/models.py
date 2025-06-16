@@ -38,6 +38,15 @@ class Service(Base):
     default_timeout_ms = Column(Integer, default=30000)
     default_retry_policy = Column(JSON)
     
+    # Agent orchestration columns
+    agent_protocol = Column(String(50), default="kpath-v1")
+    auth_type = Column(String(50), default="bearer_token")
+    auth_config = Column(JSON)
+    tool_recommendations = Column(JSON)
+    agent_capabilities = Column(JSON)
+    communication_patterns = Column(JSON)
+    orchestration_metadata = Column(JSON)
+    
     # Relationships
     capabilities = relationship("ServiceCapability", back_populates="service", cascade="all, delete-orphan")
     interactions = relationship("InteractionCapability", back_populates="service", cascade="all, delete-orphan")
@@ -49,6 +58,7 @@ class Service(Base):
                                      cascade="all, delete-orphan", uselist=False)
     agent_protocols = relationship("ServiceAgentProtocols", back_populates="service", 
                                  cascade="all, delete-orphan", uselist=False)
+    tools = relationship("Tool", back_populates="service", cascade="all, delete-orphan")
     
     __table_args__ = (
         CheckConstraint("status IN ('active', 'inactive', 'deprecated')", name="check_service_status"),
@@ -56,6 +66,10 @@ class Service(Base):
                        "'ESBEndpoint', 'MicroService')", name="check_tool_type"),
         CheckConstraint("visibility IN ('internal', 'org-wide', 'public', 'restricted')", 
                        name="check_visibility"),
+        CheckConstraint("agent_protocol IN ('kpath-v1', 'kpath-v2', 'mcp-v1', 'custom')", 
+                       name="check_agent_protocol"),
+        CheckConstraint("auth_type IN ('bearer_token', 'api_key', 'oauth2', 'basic_auth', 'custom', 'none')", 
+                       name="check_auth_type"),
     )
 
 
@@ -445,6 +459,68 @@ class UserSelection(Base):
     # Relationships
     selected_service = relationship("Service")
 
+
+
+
+
+class Tool(Base):
+    """Comprehensive tool definitions for agent orchestration"""
+    __tablename__ = "tools"
+    
+    id = Column(Integer, primary_key=True)
+    service_id = Column(Integer, ForeignKey("services.id", ondelete="CASCADE"), nullable=False)
+    tool_name = Column(String(255), nullable=False)
+    tool_description = Column(Text, nullable=False)
+    input_schema = Column(JSON, nullable=False)
+    output_schema = Column(JSON, nullable=True)
+    example_calls = Column(JSON, nullable=True)
+    validation_rules = Column(JSON, nullable=True)
+    error_handling = Column(JSON, nullable=True)
+    tool_version = Column(String(50), default="1.0.0")
+    is_active = Column(Boolean, default=True)
+    deprecation_date = Column(DateTime, nullable=True)
+    deprecation_notice = Column(Text, nullable=True)
+    performance_metrics = Column(JSON, nullable=True)
+    rate_limit_config = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    service = relationship("Service", back_populates="tools")
+    invocation_logs = relationship("InvocationLog", back_populates="tool", cascade="all, delete-orphan")
+    
+    __table_args__ = (
+        UniqueConstraint("service_id", "tool_name", name="uq_service_tool_name"),
+    )
+
+
+class InvocationLog(Base):
+    """Track actual tool invocations for agent orchestration analytics"""
+    __tablename__ = "invocation_logs"
+    
+    id = Column(Integer, primary_key=True)
+    initiator_agent = Column(String(255), nullable=False)
+    target_service_id = Column(Integer, ForeignKey("services.id", ondelete="CASCADE"), nullable=False)
+    target_agent = Column(String(255), nullable=False)
+    tool_id = Column(Integer, ForeignKey("tools.id", ondelete="CASCADE"), nullable=False)
+    tool_called = Column(String(255), nullable=False)
+    input_parameters = Column(JSON, nullable=True)
+    output_result = Column(JSON, nullable=True)
+    success_status = Column(Boolean, nullable=False)
+    error_details = Column(JSON, nullable=True)
+    response_time_ms = Column(Integer, nullable=True)
+    invocation_start = Column(DateTime, nullable=False)
+    invocation_end = Column(DateTime, nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    session_id = Column(String(255), nullable=True)
+    trace_id = Column(String(255), nullable=True)
+    performance_metrics = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    target_service = relationship("Service")
+    tool = relationship("Tool", back_populates="invocation_logs")
+    user = relationship("User")
 
 
 # Analytics models for tracking system usage
