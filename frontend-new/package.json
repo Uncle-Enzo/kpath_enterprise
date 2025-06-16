@@ -25,11 +25,13 @@
   "type": "module",
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
+    "@types/marked": "^5.0.2",
     "axios": "^1.6.2",
     "chart.js": "^4.4.1",
     "date-fns": "^2.30.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
+    "marked": "^15.0.12",
     "svelte-fa": "^3.0.4"
   }
 }

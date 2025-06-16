@@ -207,6 +207,7 @@
       <a href="#examples" class="text-primary-600 hover:text-primary-800">6. Example Queries</a>
       <a href="#authentication" class="text-primary-600 hover:text-primary-800">7. Authentication & API Keys</a>
       <a href="#orchestration" class="text-primary-600 hover:text-primary-800">8. Agent Orchestration</a>
+      <a href="#integrations" class="text-primary-600 hover:text-primary-800">9. ESB Integration Guides</a>
     </div>
   </div>
 
@@ -940,6 +941,184 @@
     </div>
   </div>
 
+  <!-- ESB Integration Guides -->
+  <div id="integrations" class="card">
+    <h2 class="text-2xl font-semibold mb-4 flex items-center">
+      <Fa icon={faServer} class="mr-2 text-primary-600" />
+      9. ESB Integration Guides (New!)
+    </h2>
+    <div class="space-y-4">
+      <p class="text-gray-700">
+        KPATH Enterprise integrates seamlessly with Enterprise Service Bus (ESB) platforms to provide intelligent, semantic-based service discovery for your integration flows. Comprehensive guides are now available for popular ESB platforms.
+      </p>
+
+      <!-- Integration Benefits -->
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 class="font-semibold text-blue-900 mb-3">
+          <Fa icon={faCheckCircle} class="mr-2" />
+          Integration Benefits
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <h4 class="font-medium text-blue-800">Dynamic Discovery:</h4>
+            <ul class="text-sm text-blue-700 space-y-1 list-disc list-inside">
+              <li>Natural language service queries</li>
+              <li>Real-time service discovery</li>
+              <li>Semantic matching for accuracy</li>
+              <li>Cost and performance optimization</li>
+            </ul>
+          </div>
+          <div class="space-y-2">
+            <h4 class="font-medium text-blue-800">Enterprise Features:</h4>
+            <ul class="text-sm text-blue-700 space-y-1 list-disc list-inside">
+              <li>Circuit breakers for resilience</li>
+              <li>Intelligent result caching</li>
+              <li>Multi-region support</li>
+              <li>A/B testing capabilities</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mulesoft Integration -->
+      <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <h3 class="font-semibold text-orange-900 mb-3">
+          <img src="data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 24 24' fill='%23ea580c' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z'/%3E%3C/svg%3E" alt="Mulesoft" class="inline-block mr-2 h-5 w-5" />
+          Mulesoft Integration Guide
+        </h3>
+        <p class="text-orange-800 text-sm mb-3">
+          Complete guide for integrating KPATH with Mulesoft Anypoint Platform
+        </p>
+        <div class="space-y-2">
+          <h4 class="font-medium text-orange-800 text-sm">What's Included:</h4>
+          <ul class="text-sm text-orange-700 space-y-1 list-disc list-inside ml-4">
+            <li>Direct HTTP integration patterns</li>
+            <li>Custom KPATH connector implementation</li>
+            <li>Anypoint Exchange integration</li>
+            <li>Dynamic routing with DataWeave</li>
+            <li>Circuit breaker and caching patterns</li>
+            <li>Real-world use cases and examples</li>
+          </ul>
+        </div>
+        <div class="mt-4">
+          <a href="/docs/integrations/mulesoft" 
+             class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800">
+            <Fa icon={faExternalLinkAlt} class="mr-1" />
+            View Mulesoft Integration Guide
+          </a>
+        </div>
+      </div>
+
+      <!-- Apache Camel Integration -->
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <h3 class="font-semibold text-red-900 mb-3">
+          <img src="data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 24 24' fill='%23dc2626' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z'/%3E%3C/svg%3E" alt="Apache Camel" class="inline-block mr-2 h-5 w-5" />
+          Apache Camel Integration Guide
+        </h3>
+        <p class="text-red-800 text-sm mb-3">
+          Complete guide for integrating KPATH with Apache Camel routes
+        </p>
+        <div class="space-y-2">
+          <h4 class="font-medium text-red-800 text-sm">What's Included:</h4>
+          <ul class="text-sm text-red-700 space-y-1 list-disc list-inside ml-4">
+            <li>Basic service discovery routes</li>
+            <li>Custom KPATH component development</li>
+            <li>Content-based routing patterns</li>
+            <li>Stream processing with Kafka integration</li>
+            <li>Camel K (Kubernetes) examples</li>
+            <li>Spring Boot configuration</li>
+          </ul>
+        </div>
+        <div class="mt-4">
+          <a href="/docs/integrations/apache-camel" 
+             class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800">
+            <Fa icon={faExternalLinkAlt} class="mr-1" />
+            View Apache Camel Integration Guide
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Start Summary -->
+      <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+        <h3 class="font-semibold text-green-900 mb-3">
+          <Fa icon={faPlay} class="mr-2" />
+          Quick Start Examples
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h4 class="font-medium text-green-800 text-sm mb-2">Mulesoft Quick Start:</h4>
+            <div class="bg-gray-900 text-gray-100 p-2 rounded text-xs overflow-x-auto">
+              <pre><code>&lt;http:request method="POST" 
+              path="/api/v1/search/search"&gt;
+  &lt;http:headers&gt;
+    &lt;http:header key="X-API-Key" 
+                 value="{'{your-api-key-here}'}" /&gt;
+  &lt;/http:headers&gt;
+&lt;/http:request&gt;</code></pre>
+            </div>
+          </div>
+          <div>
+            <h4 class="font-medium text-green-800 text-sm mb-2">Apache Camel Quick Start:</h4>
+            <div class="bg-gray-900 text-gray-100 p-2 rounded text-xs overflow-x-auto">
+              <pre><code>from("direct:discover")
+  .setHeader("X-API-Key", 
+            constant("{'{your-api-key-here}'}"))
+  .to("http://localhost:8000" +
+      "/api/v1/search/search")</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Common Use Cases -->
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h3 class="font-semibold mb-3">Common Integration Use Cases:</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-gray-50 p-3 rounded">
+            <h4 class="font-medium text-sm mb-1">Customer 360 View</h4>
+            <p class="text-xs text-gray-600">Discover all customer-related services dynamically</p>
+            <code class="text-xs bg-gray-200 px-1 py-0.5 rounded">Query: "customer profile data history"</code>
+          </div>
+          <div class="bg-gray-50 p-3 rounded">
+            <h4 class="font-medium text-sm mb-1">Payment Processing</h4>
+            <p class="text-xs text-gray-600">Find the best payment processor for each transaction</p>
+            <code class="text-xs bg-gray-200 px-1 py-0.5 rounded">Query: "payment processing USD credit"</code>
+          </div>
+          <div class="bg-gray-50 p-3 rounded">
+            <h4 class="font-medium text-sm mb-1">Notification Routing</h4>
+            <p class="text-xs text-gray-600">Route notifications to the right channel</p>
+            <code class="text-xs bg-gray-200 px-1 py-0.5 rounded">Query: "send notification email urgent"</code>
+          </div>
+          <div class="bg-gray-50 p-3 rounded">
+            <h4 class="font-medium text-sm mb-1">Document Management</h4>
+            <p class="text-xs text-gray-600">Find document storage and retrieval services</p>
+            <code class="text-xs bg-gray-200 px-1 py-0.5 rounded">Query: "document storage retrieval"</code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resources -->
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <h3 class="font-semibold text-yellow-900 mb-2">📚 Integration Resources</h3>
+        <div class="text-yellow-800 text-sm space-y-1">
+          <p><strong>✅ ESB Integration Summary:</strong> Quick overview and comparison</p>
+          <p><strong>✅ Mulesoft Guide:</strong> Complete implementation patterns and examples</p>
+          <p><strong>✅ Apache Camel Guide:</strong> Routes, components, and best practices</p>
+          <p><strong>✅ Code Examples:</strong> Ready-to-use integration patterns</p>
+          <p><strong>✅ Best Practices:</strong> Caching, error handling, and monitoring</p>
+        </div>
+        <div class="mt-3">
+          <a href="/docs/integrations/" 
+             target="_blank"
+             class="inline-flex items-center text-sm text-primary-600 hover:text-primary-800">
+            <Fa icon={faExternalLinkAlt} class="mr-1" />
+            View All Integration Documentation
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Testing Section -->
   <div class="card bg-primary-50 border-primary-200">
     <h2 class="text-2xl font-semibold mb-4 flex items-center text-primary-900">
@@ -979,6 +1158,7 @@
           <p><strong>✅ Security:</strong> SHA256 hashing and secure generation implemented</p>
           <p><strong>✅ Performance:</strong> 45-165ms response times with API key authentication</p>
           <p><strong>🔬 Agent Orchestration:</strong> Implemented (5 tools) - currently in testing phase</p>
+          <p><strong>📚 ESB Integration Guides:</strong> New Mulesoft and Apache Camel integration documentation</p>
         </div>
       </div>
     </div>
@@ -1004,20 +1184,6 @@
   
   .btn:disabled {
     @apply opacity-50 cursor-not-allowed;
-  }
-  
-  /* Spinner animation */
-  .animate-spin {
-    animation: spin 1s linear infinite;
-  }
-  
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
   }
   
   /* Custom scrollbar for code blocks */

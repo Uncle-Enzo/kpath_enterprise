@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPATH Enterprise - Integration Documentation</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2563eb;
+            margin-bottom: 1rem;
+        }
+        h2 {
+            color: #1e40af;
+            margin-top: 2rem;
+        }
+        .doc-list {
+            list-style: none;
+            padding: 0;
+        }
+        .doc-item {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f3f4f6;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .doc-item:hover {
+            background: #e5e7eb;
+        }
+        .doc-link {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .doc-link:hover {
+            text-decoration: underline;
+        }
+        .doc-desc {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #2563eb;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/user-guide" class="back-link">← Back to User Guide</a>
+        
+        <h1>KPATH Enterprise Integration Documentation</h1>
+        
+        <p>Welcome to the KPATH Enterprise integration documentation. These guides will help you integrate KPATH with your existing Enterprise Service Bus (ESB) and integration platforms.</p>
+        
+        <h2>Available Integration Guides</h2>
+        
+        <ul class="doc-list">
+            <li class="doc-item">
+                <a href="ESB-Integration-Summary.md" class="doc-link">ESB Integration Summary</a>
+                <p class="doc-desc">Quick overview and comparison of ESB integration approaches with KPATH Enterprise.</p>
+            </li>
+            
+            <li class="doc-item">
+                <a href="mulesoft-integration-guide.md" class="doc-link">Mulesoft Integration Guide</a>
+                <p class="doc-desc">Complete implementation patterns and examples for integrating KPATH with Mulesoft, including HTTP connectors, custom components, and Anypoint Exchange integration.</p>
+            </li>
+            
+            <li class="doc-item">
+                <a href="apache-camel-integration-guide.md" class="doc-link">Apache Camel Integration Guide</a>
+                <p class="doc-desc">Routes, components, and best practices for integrating KPATH with Apache Camel, including Spring Boot configuration and Camel K examples.</p>
+            </li>
+            
+            <li class="doc-item">
+                <a href="integration-update-summary.md" class="doc-link">Integration Update Summary</a>
+                <p class="doc-desc">Recent updates and enhancements to the integration capabilities.</p>
+            </li>
+        </ul>
+        
+        <h2>Key Integration Features</h2>
+        
+        <ul>
+            <li>Dynamic service discovery using natural language queries</li>
+            <li>API key and JWT authentication support</li>
+            <li>Intelligent routing based on semantic search</li>
+            <li>Caching strategies for performance optimization</li>
+            <li>Circuit breaker patterns for resilience</li>
+            <li>Multi-region service discovery</li>
+            <li>Real-time monitoring and metrics</li>
+        </ul>
+        
+        <h2>Getting Started</h2>
+        
+        <p>To get started with KPATH Enterprise integration:</p>
+        
+        <ol>
+            <li>Choose your integration platform (Mulesoft or Apache Camel)</li>
+            <li>Obtain an API key from the KPATH admin interface</li>
+            <li>Follow the appropriate integration guide</li>
+            <li>Test with the provided examples</li>
+            <li>Implement your specific use cases</li>
+        </ol>
+        
+        <p>For additional support, please refer to the main <a href="/user-guide">User Guide</a> or contact your KPATH administrator.</p>
+    </div>
+</body>
+</html>

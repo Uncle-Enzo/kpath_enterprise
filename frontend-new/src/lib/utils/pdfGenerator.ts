@@ -357,8 +357,47 @@ export async function generateUserGuidePDF() {
   
   addInfoBox('Note: Agent orchestration features are implemented but require comprehensive testing before production use.', 'warning');
   
-  // Section 9: Testing and Troubleshooting
-  addText('9. Testing and Troubleshooting', 16, true, true);
+  // Section 9: ESB Integration Guides
+  addText('9. ESB Integration Guides', 16, true, true);
+  
+  addText('KPATH Enterprise integrates seamlessly with Enterprise Service Bus (ESB) platforms to provide intelligent, semantic-based service discovery for your integration flows.', 12);
+  
+  addText('Mulesoft Integration:', 14, true);
+  addText('• Direct HTTP integration patterns');
+  addText('• Custom KPATH connector implementation');
+  addText('• Anypoint Exchange integration');
+  addText('• Dynamic routing with DataWeave');
+  addText('• Circuit breaker and caching patterns');
+  
+  addText('Quick Start - Mulesoft:', 14, true);
+  addCodeBlock(`<http:request method="POST" path="/api/v1/search/search">
+  <http:headers>
+    <http:header key="X-API-Key" value="\${kpath.api.key}" />
+  </http:headers>
+</http:request>`);
+  
+  addText('Apache Camel Integration:', 14, true);
+  addText('• Basic service discovery routes');
+  addText('• Custom KPATH component development');
+  addText('• Content-based routing patterns');
+  addText('• Stream processing with Kafka');
+  addText('• Camel K (Kubernetes) examples');
+  
+  addText('Quick Start - Apache Camel:', 14, true);
+  addCodeBlock(`from("direct:discover")
+  .setHeader("X-API-Key", constant("\${kpath.api.key}"))
+  .to("http://localhost:8000/api/v1/search/search")`);
+  
+  addText('Common Use Cases:', 14, true);
+  addText('• Customer 360 View: Discover all customer-related services');
+  addText('• Payment Processing: Find the best payment processor');
+  addText('• Notification Routing: Route to the right channel');
+  addText('• Document Management: Find storage and retrieval services');
+  
+  addInfoBox('ESB Integration Documentation: Complete guides available at /docs/integrations/', 'info');
+  
+  // Section 10: Testing and Troubleshooting
+  addText('10. Testing and Troubleshooting', 16, true, true);
   
   addText('Quick Health Check:', 14, true);
   addCodeBlock(`# Check system health
