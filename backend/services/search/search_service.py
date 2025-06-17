@@ -33,6 +33,8 @@ class SearchQuery:
     domains: Optional[List[str]] = None
     capabilities: Optional[List[str]] = None
     include_orchestration: bool = False
+    search_mode: str = "agents_only"
+    search_mode: str = "agents_only"
 
 
 class SearchService(ABC):

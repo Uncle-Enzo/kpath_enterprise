@@ -190,3 +190,170 @@ class EmbeddingService(ABC):
         
         # Ensure result is in [0, 1] range
         return max(0.0, min(1.0, (similarity + 1) / 2))
+    
+    def embed_tool(self, tool_data: Dict[str, Any]) -> np.ndarray:
+        """
+        Generate embedding for a tool record.
+        
+        Combines tool name, description, input/output schemas into
+        a single text for embedding.
+        
+        Args:
+            tool_data: Tool data dictionary
+            
+        Returns:
+            Tool embedding vector
+        """
+        # Combine tool fields into searchable text
+        text_parts = []
+        
+        # Add tool name (weighted more heavily)
+        if tool_data.get('tool_name'):
+            text_parts.extend([tool_data['tool_name']] * 3)  # Triple weight
+        
+        # Add description
+        if tool_data.get('description'):
+            text_parts.append(tool_data['description'])
+        
+        # Add input schema descriptions
+        if tool_data.get('input_schema') and isinstance(tool_data['input_schema'], dict):
+            schema = tool_data['input_schema']
+            # Extract parameter names and descriptions
+            if 'properties' in schema:
+                for param, details in schema['properties'].items():
+                    text_parts.append(param)
+                    if isinstance(details, dict) and 'description' in details:
+                        text_parts.append(details['description'])
+        
+        # Add output schema descriptions
+        if tool_data.get('output_schema') and isinstance(tool_data['output_schema'], dict):
+            schema = tool_data['output_schema']
+            if 'properties' in schema:
+                for param, details in schema['properties'].items():
+                    text_parts.append(param)
+                    if isinstance(details, dict) and 'description' in details:
+                        text_parts.append(details['description'])
+        
+        # Add example call parameter names
+        if tool_data.get('example_calls') and isinstance(tool_data['example_calls'], dict):
+            for example_name, example_data in tool_data['example_calls'].items():
+                text_parts.append(example_name)
+                if isinstance(example_data, dict):
+                    text_parts.extend(example_data.keys())
+        
+        # Combine all parts
+        combined_text = ' '.join(str(part) for part in text_parts if part)
+        
+        return self.embed_text(combined_text)
+
+    def embed_tools_from_db(self, db: Session) -> Tuple[np.ndarray, List[int]]:
+        """
+        Generate embeddings for all active tools in the database.
+        
+        Args:
+            db: Database session
+            
+        Returns:
+            Tuple of (embeddings matrix, tool IDs list)
+        """
+        from backend.models.models import Tool
+        
+        # Get all active tools
+        tools = db.query(Tool).filter(
+            Tool.is_active == True
+        ).all()
+        
+        if not tools:
+            return np.array([]), []
+        
+        # Convert tools to embedding data
+        tool_texts = []
+        tool_ids = []
+        
+        for tool in tools:
+            tool_data = {
+                'tool_name': tool.tool_name,
+                'description': tool.tool_description,
+                'input_schema': tool.input_schema,
+                'output_schema': tool.output_schema,
+                'example_calls': tool.example_calls
+            }
+            
+            # Combine into searchable text
+            text_parts = []
+            if tool_data['tool_name']:
+                text_parts.extend([tool_data['tool_name']] * 3)
+            if tool_data['description']:
+                text_parts.append(tool_data['description'])
+            
+            # Extract schema information
+            for schema_type in ['input_schema', 'output_schema']:
+                schema = tool_data.get(schema_type)
+                if schema and isinstance(schema, dict) and 'properties' in schema:
+                    for param, details in schema['properties'].items():
+                        text_parts.append(param)
+                        if isinstance(details, dict) and 'description' in details:
+                            text_parts.append(details['description'])
+            
+            # Extract example call information
+            examples = tool_data.get('example_calls')
+            if examples and isinstance(examples, dict):
+                for example_name, example_data in examples.items():
+                    text_parts.append(example_name)
+                    if isinstance(example_data, dict):
+                        text_parts.extend(example_data.keys())
+            
+            combined_text = ' '.join(str(part) for part in text_parts if part)
+            tool_texts.append(combined_text)
+            tool_ids.append(tool.id)
+        
+        # Generate embeddings
+        embeddings = self.embed_texts(tool_texts)
+        
+        return embeddings, tool_ids
+        """
+        Generate embedding for a search query.
+        
+        Args:
+            query: Search query text
+            
+        Returns:
+            Query embedding vector
+        """
+        return self.embed_text(query)
+    
+    def embed_batch(self, texts: List[str]) -> np.ndarray:
+        """
+        Generate embeddings for a batch of texts.
+        
+        Args:
+            texts: List of texts to embed
+            
+        Returns:
+            Matrix of embeddings
+        """
+        return self.embed_texts(texts)
+    
+    def calculate_similarities(self, query_embedding: np.ndarray, 
+                             document_embeddings: np.ndarray) -> np.ndarray:
+        """
+        Calculate similarities between a query and multiple documents.
+        
+        Args:
+            query_embedding: Query embedding vector
+            document_embeddings: Matrix of document embeddings
+            
+        Returns:
+            Array of similarity scores
+        """
+        if len(document_embeddings.shape) == 1:
+            # Single document
+            return np.array([self.similarity(query_embedding, document_embeddings)])
+        
+        # Multiple documents
+        similarities = []
+        for doc_embedding in document_embeddings:
+            sim = self.similarity(query_embedding, doc_embedding)
+            similarities.append(sim)
+        
+        return np.array(similarities)

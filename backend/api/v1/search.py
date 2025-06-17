@@ -4,7 +4,7 @@ Search API endpoints for KPATH Enterprise.
 Provides semantic search capabilities via REST API.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query, status
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 import logging
@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["search"])
 
 
-@router.post("/search", response_model=SearchResponse)
+@router.post("", response_model=SearchResponse)
 async def search_services(
     request: SearchRequest,
     db: Session = Depends(get_db),
@@ -75,7 +75,8 @@ async def search_services(
             min_score=request.min_score,
             domains=request.domains,
             capabilities=request.capabilities,
-            include_orchestration=request.include_orchestration
+            include_orchestration=request.include_orchestration,
+            search_mode=request.search_mode
         )
         
         # Perform search
@@ -115,16 +116,20 @@ async def search_services(
             # Don't fail the search if logging fails
         
         # Convert to response format
-        search_results = [
-            SearchResultSchema(
+        search_results = []
+        for result in results:
+            result_data = SearchResultSchema(
                 service_id=result.service_id,
                 score=result.score,
                 rank=result.rank,
                 service=result.service_data,
-                distance=result.distance
+                distance=result.distance,
+                entity_type=getattr(result, 'entity_type', 'service'),
+                tool_data=getattr(result, 'tool_data', None),
+                recommended_tool=getattr(result, 'recommended_tool', None),
+                workflow_data=getattr(result, 'workflow_data', None)
             )
-            for result in results
-        ]
+            search_results.append(result_data)
         
         # Log search for analytics
         logger.info(f"Search by user {current_user.id}: '{request.query}' -> {len(results)} results in {search_time_ms}ms")
@@ -134,7 +139,8 @@ async def search_services(
             results=search_results,
             total_results=len(search_results),
             search_time_ms=search_time_ms,
-            user_id=current_user.id
+            user_id=current_user.id,
+            search_mode=request.search_mode
         )
         
     except Exception as e:
@@ -157,7 +163,7 @@ async def search_services(
         raise HTTPException(status_code=500, detail="Search failed")
 
 
-@router.get("/search", response_model=SearchResponse)
+@router.get("", response_model=SearchResponse)
 async def search_services_get(
     query: str = Query(..., description="Search query"),
     limit: int = Query(10, ge=1, le=100, description="Maximum number of results"),
@@ -165,6 +171,7 @@ async def search_services_get(
     domains: Optional[List[str]] = Query(None, description="Filter by domains"),
     capabilities: Optional[List[str]] = Query(None, description="Filter by capabilities"),
     include_orchestration: bool = Query(False, description="Include agent orchestration data (tools, schemas, examples)"),
+    search_mode: str = Query("agents_only", description="Search mode: agents_only, tools_only, agents_and_tools, workflows, capabilities"),
     api_key: Optional[str] = Query(None, description="API key for authentication (alternative to X-API-Key header)"),
     db: Session = Depends(get_db),
     token: Optional[str] = Depends(oauth2_scheme),
@@ -232,7 +239,8 @@ async def search_services_get(
         min_score=min_score,
         domains=domains,
         capabilities=capabilities,
-        include_orchestration=include_orchestration
+        include_orchestration=include_orchestration,
+        search_mode=search_mode
     )
     
     # Use the same logic as POST endpoint
@@ -256,7 +264,7 @@ async def search_services_get(
     return response
 
 
-@router.get("/search/status", response_model=SearchStatusResponse)
+@router.get("/status", response_model=SearchStatusResponse)
 async def get_search_status(
     current_user: User = Depends(get_current_user)
 ):
@@ -280,7 +288,7 @@ async def get_search_status(
         raise HTTPException(status_code=500, detail="Failed to get search status")
 
 
-@router.post("/search/rebuild")
+@router.post("/rebuild")
 async def rebuild_search_index(
     request: IndexRebuildRequest,
     background_tasks: BackgroundTasks,
@@ -323,7 +331,7 @@ async def rebuild_search_index(
     }
 
 
-@router.post("/search/initialize")
+@router.post("/initialize")
 async def initialize_search_service(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
@@ -366,7 +374,7 @@ async def initialize_search_service(
     }
 
 
-@router.get("/search/similar/{service_id}")
+@router.get("/similar/{service_id}")
 async def find_similar_services(
     service_id: int,
     limit: int = 10,
@@ -440,7 +448,7 @@ async def find_similar_services(
         raise HTTPException(status_code=500, detail="Failed to find similar services")
 
 
-@router.delete("/search/service/{service_id}")
+@router.delete("/service/{service_id}")
 async def remove_service_from_index(
     service_id: int,
     current_user: User = Depends(get_current_user)
@@ -471,7 +479,7 @@ async def remove_service_from_index(
         raise HTTPException(status_code=500, detail="Failed to remove service from index")
 
 
-@router.put("/search/service/{service_id}")
+@router.put("/service/{service_id}")
 async def update_service_in_index(
     service_id: int,
     db: Session = Depends(get_db),
@@ -505,7 +513,7 @@ async def update_service_in_index(
         raise HTTPException(status_code=500, detail="Failed to update service in index")
 
 
-@router.post("/search/service/{service_id}")
+@router.post("/service/{service_id}")
 async def add_service_to_index(
     service_id: int,
     db: Session = Depends(get_db),
@@ -540,7 +548,7 @@ async def add_service_to_index(
 
 
 
-@router.post("/search/feedback")
+@router.post("/feedback")
 async def submit_search_feedback(
     feedback: SearchFeedbackRequest,
     db: Session = Depends(get_db),
@@ -595,7 +603,56 @@ async def submit_search_feedback(
         raise HTTPException(status_code=500, detail="Failed to record feedback")
 
 
-@router.get("/search/feedback/stats")
+@router.get("/debug/tool-index")
+async def debug_tool_index(
+    current_user: User = Depends(get_current_user_flexible)
+):
+    """
+    Debug endpoint to check tool index status.
+    """
+    try:
+        search_manager = get_search_manager()
+        
+        return {
+            "search_manager_initialized": search_manager.is_initialized,
+            "service_index_built": search_manager.index_built,
+            "tool_index_built": search_manager.tool_index_built,
+            "tool_ids": search_manager.tool_ids if hasattr(search_manager, 'tool_ids') else [],
+            "tool_count": len(search_manager.tool_ids) if hasattr(search_manager, 'tool_ids') and search_manager.tool_ids else 0,
+            "tool_embeddings_shape": search_manager.tool_embeddings.shape if hasattr(search_manager, 'tool_embeddings') and search_manager.tool_embeddings is not None else None
+        }
+        
+    except Exception as e:
+        logger.error(f"Debug tool index error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/debug/build-tool-index")
+async def build_tool_index(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_flexible)
+):
+    """
+    Debug endpoint to manually build tool index.
+    """
+    try:
+        search_manager = get_search_manager()
+        
+        # Build tool index
+        search_manager._build_tool_index(db)
+        
+        return {
+            "message": "Tool index build triggered",
+            "tool_index_built": search_manager.tool_index_built,
+            "tool_count": len(search_manager.tool_ids) if hasattr(search_manager, 'tool_ids') and search_manager.tool_ids else 0
+        }
+        
+    except Exception as e:
+        logger.error(f"Build tool index error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/feedback/stats")
 async def get_feedback_stats(
     service_id: Optional[int] = None,
     limit: int = 10,
@@ -652,7 +709,7 @@ async def get_feedback_stats(
         raise HTTPException(status_code=500, detail="Failed to retrieve feedback stats")
 
 
-@router.get("/search/feedback/queries")
+@router.get("/feedback/queries")
 async def get_popular_queries(
     limit: int = 20,
     db: Session = Depends(get_db),
