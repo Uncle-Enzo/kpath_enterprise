@@ -69,6 +69,19 @@
 
   const getCurlQueryExample = `curl -X GET "http://localhost:8000/api/v1/search?query=customer%20data&limit=10&api_key=YOUR_API_KEY"`;
 
+  // Agent Orchestration Examples (NEW - June 17, 2025)
+  const getCurlOrchestrationExample = `curl -X GET "http://localhost:8000/api/v1/search/search?query=customer%20data&limit=5&include_orchestration=true" \\
+  -H "X-API-Key: YOUR_API_KEY"`;
+
+  const postOrchestrationExample = `curl -X POST http://localhost:8000/api/v1/search/search \\
+  -H "Content-Type: application/json" \\
+  -H "X-API-Key: YOUR_API_KEY" \\
+  -d '{
+    "query": "customer data management",
+    "limit": 5,
+    "include_orchestration": true
+  }'`;
+
   const responseExample = {
     "query": "payment processing",
     "results": [
@@ -148,6 +161,78 @@
     "user_id": 3,
     "timestamp": "2025-06-16T10:32:28.532913"
   };
+
+  // Orchestration-Enhanced Response Example (NEW)
+  const orchestrationResponseExample = {
+    "query": "customer data management",
+    "results": [
+      {
+        "service_id": 4,
+        "score": 0.8234,
+        "rank": 1,
+        "service": {
+          "id": 4,
+          "name": "CustomerDataAPI",
+          "description": "Core API for accessing and managing customer master data, profiles, and preferences",
+          "agent_protocol": "kpath-v1",
+          "auth_type": "bearer_token",
+          "tools": [
+            {
+              "tool_name": "get_customer_profile",
+              "description": "Retrieve complete customer profile and preferences data",
+              "input_schema": {
+                "type": "object",
+                "required": ["customer_id"],
+                "properties": {
+                  "customer_id": {
+                    "type": "string",
+                    "description": "Unique customer identifier"
+                  },
+                  "include_preferences": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                }
+              },
+              "output_schema": {
+                "type": "object",
+                "properties": {
+                  "customer_id": {"type": "string"},
+                  "name": {"type": "string"},
+                  "email": {"type": "string"},
+                  "preferences": {"type": "object"}
+                }
+              },
+              "example_calls": {
+                "basic_lookup": {
+                  "customer_id": "CUST-12345"
+                },
+                "with_preferences": {
+                  "customer_id": "CUST-12345",
+                  "include_preferences": true
+                }
+              },
+              "tool_version": "1.0.0",
+              "is_active": true
+            }
+          ],
+          "orchestration_summary": {
+            "total_tools": 2,
+            "protocol_version": "kpath-v1",
+            "authentication_required": true,
+            "supports_orchestration": true,
+            "tool_count_by_type": {
+              "data_retrieval": 2
+            }
+          }
+        }
+      }
+    ],
+    "total_results": 1,
+    "search_time_ms": 234.5,
+    "user_id": 3,
+    "timestamp": "2025-06-17T11:45:00.000Z"
+  };
 </script>
 
 <div class="max-w-4xl mx-auto space-y-8" id="user-guide-content">
@@ -183,10 +268,10 @@
       </div>
       <div class="mt-2 space-y-1">
         <p class="text-sm text-green-700">
-          ✅ <strong>Updated June 16, 2025:</strong> Now includes complete API key documentation and testing examples
+          ✅ <strong>Updated June 17, 2025:</strong> Now includes complete agent orchestration with tool schemas, examples, and invocation metadata
         </p>
         <p class="text-sm text-blue-700">
-          🎉 <strong>NEW:</strong> Enhanced response format with complete orchestration metadata for agent-to-agent communication
+          🎉 <strong>NEW:</strong> Use <code class="bg-blue-100 px-2 py-1 rounded text-xs">include_orchestration=true</code> to receive complete tool definitions for agent-to-agent communication
         </p>
       </div>
     </div>
@@ -346,6 +431,55 @@
         </p>
       </div>
 
+      <!-- Agent Orchestration Examples (NEW) -->
+      <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+        <h3 class="font-semibold mb-3 flex items-center text-green-900">
+          🎉 NEW: Agent Orchestration Enhanced Search
+        </h3>
+        <p class="text-sm text-green-800 mb-4">
+          Use <code class="bg-green-100 px-2 py-1 rounded">include_orchestration=true</code> to receive complete tool schemas, examples, and orchestration metadata for agent-to-agent communication.
+        </p>
+        
+        <h4 class="text-sm font-medium mb-2 flex items-center text-green-800">
+          GET Method with Orchestration
+          <button 
+            on:click={() => copyToClipboard(getCurlOrchestrationExample, 'get-orchestration')}
+            class="ml-2 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            <Fa icon={faCopy} class="mr-1" />
+            {copySuccess === 'get-orchestration' ? 'Copied!' : 'Copy'}
+          </button>
+        </h4>
+        <div class="bg-gray-900 text-gray-100 p-4 rounded text-sm overflow-x-auto mb-4">
+          <pre><code>{getCurlOrchestrationExample}</code></pre>
+        </div>
+        
+        <h4 class="text-sm font-medium mb-2 flex items-center text-green-800">
+          POST Method with Orchestration
+          <button 
+            on:click={() => copyToClipboard(postOrchestrationExample, 'post-orchestration')}
+            class="ml-2 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            <Fa icon={faCopy} class="mr-1" />
+            {copySuccess === 'post-orchestration' ? 'Copied!' : 'Copy'}
+          </button>
+        </h4>
+        <div class="bg-gray-900 text-gray-100 p-4 rounded text-sm overflow-x-auto">
+          <pre><code>{postOrchestrationExample}</code></pre>
+        </div>
+        
+        <div class="mt-3 p-3 bg-green-100 rounded">
+          <h5 class="font-medium text-green-900 text-sm mb-2">What You'll Get:</h5>
+          <ul class="text-xs text-green-800 space-y-1 list-disc list-inside">
+            <li><strong>Complete Tool Schemas:</strong> Input/output definitions for direct agent invocation</li>
+            <li><strong>Example Calls:</strong> Ready-to-use examples with different parameter combinations</li>
+            <li><strong>Authentication Details:</strong> Specific auth configuration per service</li>
+            <li><strong>Orchestration Metadata:</strong> Protocol versions, SLA expectations, security levels</li>
+            <li><strong>Communication Patterns:</strong> Retry policies, idempotency, async support</li>
+          </ul>
+        </div>
+      </div>
+
       <!-- API Endpoints -->
       <div class="border border-gray-200 rounded-lg overflow-hidden">
         <div class="bg-gray-100 px-4 py-2 font-semibold">Available Endpoints</div>
@@ -425,6 +559,12 @@
               <td class="px-4 py-3 text-sm text-gray-500">optional</td>
               <td class="px-4 py-3 text-sm text-gray-900">API key for authentication (GET method only)</td>
             </tr>
+            <tr class="bg-green-50">
+              <td class="px-4 py-3 font-mono text-sm">include_orchestration</td>
+              <td class="px-4 py-3 text-sm text-gray-900">boolean</td>
+              <td class="px-4 py-3 text-sm text-gray-500">false</td>
+              <td class="px-4 py-3 text-sm text-gray-900">Include complete tool schemas, examples, and orchestration metadata for agent-to-agent communication</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -438,6 +578,7 @@
           <li><strong>Domains:</strong> Filter by business areas like "Finance", "Communication", "Authentication"</li>
           <li><strong>Capabilities:</strong> Filter by specific capabilities like "send", "validate", "process"</li>
           <li><strong>API Key:</strong> Can be passed in header (X-API-Key) or as query parameter (api_key) for GET requests</li>
+          <li><strong>Include Orchestration:</strong> Set to true to receive complete tool schemas, examples, and metadata for agent-to-agent communication</li>
         </ul>
       </div>
     </div>
@@ -467,6 +608,37 @@
         </h3>
         <div class="bg-gray-900 text-gray-100 p-4 rounded text-sm overflow-x-auto">
           <pre><code>{JSON.stringify(responseExample, null, 2)}</code></pre>
+        </div>
+      </div>
+
+      <!-- Agent Orchestration Response Example (NEW) -->
+      <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+        <h3 class="font-semibold mb-3 flex items-center text-green-900">
+          🎉 NEW: Agent Orchestration Response (include_orchestration=true)
+          <button 
+            on:click={() => copyToClipboard(JSON.stringify(orchestrationResponseExample, null, 2), 'orchestration-response')}
+            class="ml-2 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            <Fa icon={faCopy} class="mr-1" />
+            {copySuccess === 'orchestration-response' ? 'Copied!' : 'Copy'}
+          </button>
+        </h3>
+        <p class="text-sm text-green-800 mb-3">
+          When <code class="bg-green-100 px-2 py-1 rounded">include_orchestration=true</code>, the response includes complete tool definitions for agent-to-agent communication:
+        </p>
+        <div class="bg-gray-900 text-gray-100 p-4 rounded text-sm overflow-x-auto">
+          <pre><code>{JSON.stringify(orchestrationResponseExample, null, 2)}</code></pre>
+        </div>
+        <div class="mt-3 p-3 bg-green-100 rounded">
+          <h4 class="font-medium text-green-900 text-sm mb-2">Key Orchestration Fields:</h4>
+          <ul class="text-xs text-green-800 space-y-1 list-disc list-inside grid grid-cols-1 md:grid-cols-2 gap-2">
+            <li><code>tools[]</code> - Complete tool definitions with schemas</li>
+            <li><code>input_schema</code> - JSON schema for parameter validation</li>
+            <li><code>output_schema</code> - Response structure definition</li>
+            <li><code>example_calls</code> - Ready-to-use invocation examples</li>
+            <li><code>orchestration_summary</code> - Tool counts and capabilities</li>
+            <li><code>tool_count_by_type</code> - Categorized tool inventory</li>
+          </ul>
         </div>
       </div>
 
@@ -820,42 +992,43 @@
     </h2>
     <div class="space-y-4">
       <p class="text-gray-700">
-        KPATH Enterprise now includes advanced agent orchestration capabilities for agent-to-agent communication with complete tool definitions and invocation tracking. <strong>All search responses now include comprehensive orchestration metadata!</strong>
+        KPATH Enterprise includes advanced agent orchestration capabilities for agent-to-agent communication with complete tool definitions and invocation tracking. <strong>NEW: Use <code class="bg-green-100 px-2 py-1 rounded">include_orchestration=true</code> to receive complete tool schemas and orchestration metadata!</strong>
       </p>
 
       <!-- Enhanced Response Format -->
       <div class="bg-green-50 border border-green-200 rounded-lg p-4">
         <h3 class="font-semibold text-green-900 mb-3">
           <Fa icon={faCheckCircle} class="mr-2" />
-          Enhanced Response Format - Now Live!
+          🎉 Tool Schema Integration - FULLY OPERATIONAL ✅
         </h3>
         <p class="text-green-800 text-sm mb-3">
-          Every search now returns comprehensive service definitions with all orchestration metadata needed for agent-to-agent communication:
+          <strong>Update (June 17, 2025):</strong> Complete tool definitions with input/output schemas, examples, and orchestration metadata are now included in search responses when <code class="bg-green-100 px-2 py-1 rounded">include_orchestration=true</code>:
         </p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="space-y-2">
-            <h4 class="font-medium text-green-800">Agent Protocol Info:</h4>
+            <h4 class="font-medium text-green-800">Tool Schema Information:</h4>
             <ul class="text-sm text-green-700 space-y-1 list-disc list-inside">
-              <li>Protocol version (kpath-v1)</li>
-              <li>Authentication configuration</li>
-              <li>Tool recommendations</li>
-              <li>Agent capabilities</li>
+              <li>Complete input/output JSON schemas</li>
+              <li>Ready-to-use example calls</li>
+              <li>Validation rules and error handling</li>
+              <li>Tool versioning and status</li>
             </ul>
           </div>
           <div class="space-y-2">
-            <h4 class="font-medium text-green-800">Communication Details:</h4>
+            <h4 class="font-medium text-green-800">Orchestration Details:</h4>
             <ul class="text-sm text-green-700 space-y-1 list-disc list-inside">
-              <li>Retry policies and timeouts</li>
-              <li>Idempotency requirements</li>
-              <li>Async/batch operation support</li>
-              <li>Security levels and SLA expectations</li>
+              <li>Agent protocol versions (kpath-v1)</li>
+              <li>Authentication requirements per service</li>
+              <li>Communication patterns and retry policies</li>
+              <li>Tool categorization and capabilities</li>
             </ul>
           </div>
         </div>
         
         <div class="mt-3 p-3 bg-green-100 rounded">
           <p class="text-xs text-green-700">
-            <strong>Example:</strong> Try searching for "payment processing" to see the full orchestration metadata including auth_config, communication_patterns, and orchestration_metadata in the response!
+            <strong>Try it now:</strong> Add <code>&include_orchestration=true</code> to any search query to see complete tool definitions with schemas and examples. For example: 
+            <a href="/search?q=customer%20data&include_orchestration=true" class="text-primary-600 hover:text-primary-800 underline">customer data with orchestration</a>
           </p>
         </div>
       </div>

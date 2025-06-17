@@ -32,6 +32,7 @@ class SearchQuery:
     min_score: float = 0.0
     domains: Optional[List[str]] = None
     capabilities: Optional[List[str]] = None
+    include_orchestration: bool = False
 
 
 class SearchService(ABC):

@@ -15,6 +15,7 @@ class SearchRequest(BaseModel):
     min_score: float = Field(0.0, description="Minimum similarity score", ge=0.0, le=1.0)
     domains: Optional[List[str]] = Field(None, description="Filter by specific domains")
     capabilities: Optional[List[str]] = Field(None, description="Filter by specific capabilities")
+    include_orchestration: bool = Field(False, description="Include agent orchestration data (tools, schemas, examples)")
     
     class Config:
         json_schema_extra = {
@@ -23,7 +24,8 @@ class SearchRequest(BaseModel):
                 "limit": 10,
                 "min_score": 0.1,
                 "domains": ["finance", "crm"],
-                "capabilities": ["data_processing", "api_integration"]
+                "capabilities": ["data_processing", "api_integration"],
+                "include_orchestration": True
             }
         }
 

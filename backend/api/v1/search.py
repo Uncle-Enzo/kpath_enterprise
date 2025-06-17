@@ -74,7 +74,8 @@ async def search_services(
             limit=request.limit,
             min_score=request.min_score,
             domains=request.domains,
-            capabilities=request.capabilities
+            capabilities=request.capabilities,
+            include_orchestration=request.include_orchestration
         )
         
         # Perform search
@@ -163,6 +164,7 @@ async def search_services_get(
     min_score: float = Query(0.0, ge=0.0, le=1.0, description="Minimum relevance score"),
     domains: Optional[List[str]] = Query(None, description="Filter by domains"),
     capabilities: Optional[List[str]] = Query(None, description="Filter by capabilities"),
+    include_orchestration: bool = Query(False, description="Include agent orchestration data (tools, schemas, examples)"),
     api_key: Optional[str] = Query(None, description="API key for authentication (alternative to X-API-Key header)"),
     db: Session = Depends(get_db),
     token: Optional[str] = Depends(oauth2_scheme),
@@ -229,7 +231,8 @@ async def search_services_get(
         limit=limit,
         min_score=min_score,
         domains=domains,
-        capabilities=capabilities
+        capabilities=capabilities,
+        include_orchestration=include_orchestration
     )
     
     # Use the same logic as POST endpoint

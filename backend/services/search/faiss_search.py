@@ -404,6 +404,43 @@ class FAISSSearchService(SearchService):
         
         return info
     
+    def _count_tools_by_type(self, tools: List[Dict[str, Any]]) -> Dict[str, int]:
+        """
+        Count tools by their apparent type based on tool names.
+        
+        Args:
+            tools: List of tool dictionaries
+            
+        Returns:
+            Dictionary with tool type counts
+        """
+        tool_types = {}
+        
+        for tool in tools:
+            tool_name = tool.get('tool_name', '').lower()
+            
+            # Categorize based on common patterns
+            if any(keyword in tool_name for keyword in ['get', 'fetch', 'retrieve', 'find', 'search', 'list']):
+                tool_type = 'data_retrieval'
+            elif any(keyword in tool_name for keyword in ['create', 'add', 'insert', 'post']):
+                tool_type = 'data_creation'
+            elif any(keyword in tool_name for keyword in ['update', 'modify', 'edit', 'patch', 'put']):
+                tool_type = 'data_modification'
+            elif any(keyword in tool_name for keyword in ['delete', 'remove', 'destroy']):
+                tool_type = 'data_deletion'
+            elif any(keyword in tool_name for keyword in ['process', 'execute', 'run', 'perform']):
+                tool_type = 'processing'
+            elif any(keyword in tool_name for keyword in ['validate', 'verify', 'check', 'test']):
+                tool_type = 'validation'
+            elif any(keyword in tool_name for keyword in ['send', 'notify', 'email', 'message']):
+                tool_type = 'communication'
+            else:
+                tool_type = 'other'
+            
+            tool_types[tool_type] = tool_types.get(tool_type, 0) + 1
+        
+        return tool_types
+    
     def semantic_search(self, query: SearchQuery, db_session, embedding_service) -> List[SearchResult]:
         """
         Perform semantic search with post-processing and filtering.
@@ -443,6 +480,35 @@ class FAISSSearchService(SearchService):
         # Get all services first
         services = {s.id: s for s in services_query.all()}
         
+        # Fetch tools data if orchestration is requested
+        tools_by_service = {}
+        if query.include_orchestration:
+            from backend.models.models import Tool
+            tools_query = db_session.query(Tool).filter(
+                Tool.service_id.in_(service_ids)
+            ).all()
+            
+            for tool in tools_query:
+                if tool.service_id not in tools_by_service:
+                    tools_by_service[tool.service_id] = []
+                tools_by_service[tool.service_id].append({
+                    'tool_name': tool.tool_name,
+                    'description': tool.tool_description,
+                    'input_schema': tool.input_schema,
+                    'output_schema': tool.output_schema,
+                    'example_calls': tool.example_calls,
+                    'validation_rules': tool.validation_rules,
+                    'error_handling': tool.error_handling,
+                    'performance_metrics': tool.performance_metrics,
+                    'rate_limit_config': tool.rate_limit_config,
+                    'tool_version': tool.tool_version,
+                    'is_active': tool.is_active,
+                    'deprecation_date': tool.deprecation_date.isoformat() if tool.deprecation_date else None,
+                    'deprecation_notice': tool.deprecation_notice,
+                    'created_at': tool.created_at.isoformat() if tool.created_at else None,
+                    'updated_at': tool.updated_at.isoformat() if tool.updated_at else None
+                })
+        
         # Build final results with filtering
         for rank, (service_id, score) in enumerate(raw_results):
             if service_id not in services:
@@ -471,23 +537,52 @@ class FAISSSearchService(SearchService):
                 ):
                     continue
             
-            result = SearchResult(
-                service_id=service_id,
-                score=score,
-                service_data={
-                    'id': service.id,
-                    'name': service.name,
-                    'description': service.description,
-                    'endpoint': service.endpoint,
-                    'version': service.version,
-                    'status': service.status,
-                    'tool_type': service.tool_type,
-                    'visibility': service.visibility,
-                    'interaction_modes': service.interaction_modes,
-                    'capabilities': [c.capability_desc for c in service.capabilities],
-                    'domains': [d.domain for d in service.industries],
-                    'tags': getattr(service, 'tags', []) or [],
-                    
+            service_data = {
+                'id': service.id,
+                'name': service.name,
+                'description': service.description,
+                'endpoint': service.endpoint,
+                'version': service.version,
+                'status': service.status,
+                'tool_type': service.tool_type,
+                'visibility': service.visibility,
+                'interaction_modes': service.interaction_modes,
+                'capabilities': [c.capability_desc for c in service.capabilities],
+                'domains': [d.domain for d in service.industries],
+                'tags': getattr(service, 'tags', []) or [],
+                
+                # Performance & SLA
+                'default_timeout_ms': service.default_timeout_ms,
+                'default_retry_policy': service.default_retry_policy,
+                'success_criteria': service.success_criteria,
+                
+                # Integration Details (if available)
+                'integration_details': {
+                    'access_protocol': service.integration_details.access_protocol if service.integration_details else None,
+                    'base_endpoint': service.integration_details.base_endpoint if service.integration_details else None,
+                    'auth_method': service.integration_details.auth_method if service.integration_details else None,
+                    'rate_limit_requests': service.integration_details.rate_limit_requests if service.integration_details else None,
+                    'rate_limit_window_seconds': service.integration_details.rate_limit_window_seconds if service.integration_details else None,
+                    'max_concurrent_requests': service.integration_details.max_concurrent_requests if service.integration_details else None,
+                    'health_check_endpoint': service.integration_details.health_check_endpoint if service.integration_details else None,
+                } if service.integration_details else None,
+                
+                # Agent Protocol Details (if available)
+                'agent_protocol_details': {
+                    'message_protocol': service.agent_protocols.message_protocol if service.agent_protocols else None,
+                    'protocol_version': service.agent_protocols.protocol_version if service.agent_protocols else None,
+                    'expected_input_format': service.agent_protocols.expected_input_format if service.agent_protocols else None,
+                    'response_style': service.agent_protocols.response_style if service.agent_protocols else None,
+                    'supports_streaming': service.agent_protocols.supports_streaming if service.agent_protocols else None,
+                    'supports_async': service.agent_protocols.supports_async if service.agent_protocols else None,
+                    'supports_batch': service.agent_protocols.supports_batch if service.agent_protocols else None,
+                    'max_context_length': service.agent_protocols.max_context_length if service.agent_protocols else None,
+                } if service.agent_protocols else None
+            }
+            
+            # Add agent orchestration data if requested
+            if query.include_orchestration:
+                service_data.update({
                     # Agent Orchestration Details
                     'agent_protocol': service.agent_protocol,
                     'auth_type': service.auth_type,
@@ -497,34 +592,23 @@ class FAISSSearchService(SearchService):
                     'communication_patterns': service.communication_patterns,
                     'orchestration_metadata': service.orchestration_metadata,
                     
-                    # Performance & SLA
-                    'default_timeout_ms': service.default_timeout_ms,
-                    'default_retry_policy': service.default_retry_policy,
-                    'success_criteria': service.success_criteria,
+                    # Tools available for this service
+                    'tools': tools_by_service.get(service_id, []),
                     
-                    # Integration Details (if available)
-                    'integration_details': {
-                        'access_protocol': service.integration_details.access_protocol if service.integration_details else None,
-                        'base_endpoint': service.integration_details.base_endpoint if service.integration_details else None,
-                        'auth_method': service.integration_details.auth_method if service.integration_details else None,
-                        'rate_limit_requests': service.integration_details.rate_limit_requests if service.integration_details else None,
-                        'rate_limit_window_seconds': service.integration_details.rate_limit_window_seconds if service.integration_details else None,
-                        'max_concurrent_requests': service.integration_details.max_concurrent_requests if service.integration_details else None,
-                        'health_check_endpoint': service.integration_details.health_check_endpoint if service.integration_details else None,
-                    } if service.integration_details else None,
-                    
-                    # Agent Protocol Details (if available)
-                    'agent_protocol_details': {
-                        'message_protocol': service.agent_protocols.message_protocol if service.agent_protocols else None,
-                        'protocol_version': service.agent_protocols.protocol_version if service.agent_protocols else None,
-                        'expected_input_format': service.agent_protocols.expected_input_format if service.agent_protocols else None,
-                        'response_style': service.agent_protocols.response_style if service.agent_protocols else None,
-                        'supports_streaming': service.agent_protocols.supports_streaming if service.agent_protocols else None,
-                        'supports_async': service.agent_protocols.supports_async if service.agent_protocols else None,
-                        'supports_batch': service.agent_protocols.supports_batch if service.agent_protocols else None,
-                        'max_context_length': service.agent_protocols.max_context_length if service.agent_protocols else None,
-                    } if service.agent_protocols else None
-                },
+                    # Orchestration summary
+                    'orchestration_summary': {
+                        'total_tools': len(tools_by_service.get(service_id, [])),
+                        'protocol_version': service.agent_protocol,
+                        'authentication_required': service.auth_type is not None,
+                        'supports_orchestration': service.agent_protocol is not None,
+                        'tool_count_by_type': self._count_tools_by_type(tools_by_service.get(service_id, []))
+                    }
+                })
+            
+            result = SearchResult(
+                service_id=service_id,
+                score=score,
+                service_data=service_data,
                 rank=rank + 1
             )
             
