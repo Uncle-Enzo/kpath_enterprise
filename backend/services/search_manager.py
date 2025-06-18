@@ -217,7 +217,10 @@ class SearchManager:
             
             # Add example usage if available
             if tool.example_calls:
-                tool_text_parts.append(f"Examples: {', '.join(tool.example_calls.keys())}")
+                if isinstance(tool.example_calls, dict):
+                    tool_text_parts.append(f"Examples: {', '.join(tool.example_calls.keys())}")
+                elif isinstance(tool.example_calls, list):
+                    tool_text_parts.append(f"Examples: {len(tool.example_calls)} available")
             
             tool_text = " ".join(tool_text_parts)
             tool_texts.append(tool_text)
