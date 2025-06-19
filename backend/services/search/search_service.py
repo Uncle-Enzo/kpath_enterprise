@@ -34,7 +34,10 @@ class SearchQuery:
     capabilities: Optional[List[str]] = None
     include_orchestration: bool = False
     search_mode: str = "agents_only"
-    search_mode: str = "agents_only"
+    response_mode: str = "full"
+    include_schemas: bool = True
+    include_examples: bool = True
+    field_filter: Optional[List[str]] = None
 
 
 class SearchService(ABC):

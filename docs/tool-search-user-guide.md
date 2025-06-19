@@ -359,11 +359,52 @@ Track search performance:
 4. **Cache results** for frequently used queries
 5. **Use batch requests** when searching for multiple terms
 
+## Token Usage Testing and Analysis
+
+KPATH Enterprise includes a comprehensive token usage testing framework to help optimize performance and costs. See the **[Token Testing Guide](token-testing-guide.md)** for complete documentation.
+
+### Quick Testing
+
+Run comprehensive token analysis with detailed logging:
+
+```bash
+cd /Users/james/claude_development/kpath_enterprise
+./tests/token_comparison/run_all_token_tests.sh
+```
+
+### What Gets Tested
+- **4 Different Approaches**: Traditional, Tools Full, Tools Compact, Tools Minimal
+- **5 Realistic Scenarios**: Shoe shopping, payment processing, customer notifications, etc.
+- **Complete Analysis**: HTTP requests, responses, token usage, and performance metrics
+
+### Output Files
+- **Session Logs**: `tests/token_comparison/test_logs/*.log` - Detailed workflow documentation
+- **JSON Results**: `tests/token_comparison/test_logs/*_results.json` - Structured data for analysis
+- **Console Output**: Real-time progress and summary statistics
+
+### Key Results
+Based on comprehensive testing:
+- **Tools Minimal**: 1,905 tokens avg, 243ms response time ⭐ **RECOMMENDED**
+- **Tools Compact**: 3,142 tokens avg, 243ms response time
+- **Traditional**: 3,324 tokens avg, 760ms response time
+- **Tools Full**: 8,794 tokens avg, 271ms response time
+
+**Breakthrough**: Tools Minimal uses **42.7% fewer tokens** than traditional approach while being **3x faster**.
+
+### For More Details
+See **[Token Testing Guide](token-testing-guide.md)** for:
+- Complete testing framework documentation
+- How to extend and customize tests
+- Detailed result interpretation
+- Integration with production workflows
+- Cost analysis and optimization strategies
+
 ## Support and Resources
 
 - **API Documentation**: http://localhost:8000/docs
 - **System Health**: http://localhost:8000/health
 - **Project Status**: `/docs/project_status.txt`
+- **Token Testing Guide**: `/docs/token-testing-guide.md`
 - **Frontend Interface**: http://localhost:5173
 
 For technical support or feature requests, refer to the project documentation or contact the development team.

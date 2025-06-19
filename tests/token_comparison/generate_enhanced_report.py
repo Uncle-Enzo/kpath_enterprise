@@ -153,10 +153,10 @@ if __name__ == "__main__":
     report_content = generate_enhanced_report()
     
     # Save report
-    with open("ENHANCED_ANALYSIS_REPORT.md", "w") as f:
+    with open("test_reports/ENHANCED_ANALYSIS_REPORT.md", "w") as f:
         f.write(report_content)
     
-    print("📄 Enhanced analysis report saved to: ENHANCED_ANALYSIS_REPORT.md")
+    print("📄 Enhanced analysis report saved to: test_reports/ENHANCED_ANALYSIS_REPORT.md")
     
     # Print key takeaway
     print("\n🔑 KEY TAKEAWAY:")

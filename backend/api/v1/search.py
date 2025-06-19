@@ -76,7 +76,11 @@ async def search_services(
             domains=request.domains,
             capabilities=request.capabilities,
             include_orchestration=request.include_orchestration,
-            search_mode=request.search_mode
+            search_mode=request.search_mode,
+            response_mode=getattr(request, 'response_mode', 'full'),
+            include_schemas=getattr(request, 'include_schemas', True),
+            include_examples=getattr(request, 'include_examples', True),
+            field_filter=getattr(request, 'field_filter', None)
         )
         
         # Perform search
@@ -171,7 +175,7 @@ async def search_services_get(
     domains: Optional[List[str]] = Query(None, description="Filter by domains"),
     capabilities: Optional[List[str]] = Query(None, description="Filter by capabilities"),
     include_orchestration: bool = Query(False, description="Include agent orchestration data (tools, schemas, examples)"),
-    search_mode: str = Query("agents_only", description="Search mode: agents_only, tools_only, agents_and_tools, workflows, capabilities"),
+    search_mode: str = Query("tools_only", description="Search mode: tools_only, agents_and_tools, workflows, capabilities"),
     api_key: Optional[str] = Query(None, description="API key for authentication (alternative to X-API-Key header)"),
     db: Session = Depends(get_db),
     token: Optional[str] = Depends(oauth2_scheme),
@@ -752,3 +756,134 @@ async def get_popular_queries(
     except Exception as e:
         logger.error(f"Popular queries error: {e}")
         raise HTTPException(status_code=500, detail="Failed to retrieve popular queries")
+
+# Tool Detail Endpoints for Token Optimization
+
+@router.get("/tools/{tool_id}/details")
+async def get_tool_details(
+    tool_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_flexible)
+):
+    """
+    Get complete tool details including schemas, examples, and metadata.
+    
+    This endpoint provides the full tool information that was removed from
+    compact/minimal search responses to reduce token usage.
+    """
+    from backend.models.models import Tool
+    
+    tool = db.query(Tool).filter(Tool.id == tool_id).first()
+    if not tool:
+        raise HTTPException(status_code=404, detail="Tool not found")
+    
+    return {
+        "tool_id": tool.id,
+        "tool_name": tool.tool_name,
+        "tool_description": tool.tool_description,
+        "tool_version": tool.tool_version,
+        "is_active": tool.is_active,
+        "service_id": tool.service_id,
+        "service_name": tool.service.name,
+        "input_schema": tool.input_schema,
+        "output_schema": tool.output_schema,
+        "example_calls": tool.example_calls,
+        "validation_rules": tool.validation_rules,
+        "error_handling": tool.error_handling,
+        "performance_metrics": tool.performance_metrics,
+        "rate_limit_config": tool.rate_limit_config,
+        "deprecation_date": tool.deprecation_date,
+        "deprecation_notice": tool.deprecation_notice,
+        "created_at": tool.created_at,
+        "updated_at": tool.updated_at
+    }
+
+
+@router.get("/tools/{tool_id}/schema")
+async def get_tool_schema(
+    tool_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_flexible)
+):
+    """
+    Get tool input and output schemas only.
+    
+    Lightweight endpoint for retrieving just the schema information
+    when using compact/minimal search responses.
+    """
+    from backend.models.models import Tool
+    
+    tool = db.query(Tool).filter(Tool.id == tool_id).first()
+    if not tool:
+        raise HTTPException(status_code=404, detail="Tool not found")
+    
+    return {
+        "tool_id": tool.id,
+        "tool_name": tool.tool_name,
+        "input_schema": tool.input_schema,
+        "output_schema": tool.output_schema,
+        "validation_rules": tool.validation_rules
+    }
+
+
+@router.get("/tools/{tool_id}/examples")
+async def get_tool_examples(
+    tool_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_flexible)
+):
+    """
+    Get tool example calls only.
+    
+    Lightweight endpoint for retrieving just the example calls
+    when using compact/minimal search responses.
+    """
+    from backend.models.models import Tool
+    
+    tool = db.query(Tool).filter(Tool.id == tool_id).first()
+    if not tool:
+        raise HTTPException(status_code=404, detail="Tool not found")
+    
+    return {
+        "tool_id": tool.id,
+        "tool_name": tool.tool_name,
+        "example_calls": tool.example_calls
+    }
+
+
+@router.get("/tools/{tool_id}/summary")
+async def get_tool_summary(
+    tool_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_flexible)
+):
+    """
+    Get tool summary information for quick reference.
+    
+    Ultra-lightweight endpoint providing just essential tool information.
+    """
+    from backend.models.models import Tool
+    
+    tool = db.query(Tool).filter(Tool.id == tool_id).first()
+    if not tool:
+        raise HTTPException(status_code=404, detail="Tool not found")
+    
+    # Generate schema summary
+    input_summary = []
+    if tool.input_schema and 'properties' in tool.input_schema:
+        input_summary = list(tool.input_schema['properties'].keys())
+    
+    output_summary = []
+    if tool.output_schema and 'properties' in tool.output_schema:
+        output_summary = list(tool.output_schema['properties'].keys())
+    
+    return {
+        "tool_id": tool.id,
+        "tool_name": tool.tool_name,
+        "tool_description": tool.tool_description,
+        "service_name": tool.service.name,
+        "input_fields": input_summary,
+        "output_fields": output_summary,
+        "is_active": tool.is_active,
+        "tool_version": tool.tool_version
+    }

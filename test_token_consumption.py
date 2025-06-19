@@ -195,16 +195,16 @@ class TokenConsumptionTest:
     def get_test_scenarios(self) -> List[Tuple[str, str]]:
         """Define test scenarios (name, query)"""
         return [
-            ("Payment Processing", "I need to process a payment for $150"),
-            ("Customer Notification", "Send a notification to customer about shipment delivery"),
-            ("Shipping Insurance", "Calculate shipping insurance for valuable items worth $5000"),
-            ("Customer Data Lookup", "Get customer data for user ID 12345"),
-            ("Invoice Generation", "Generate an invoice for recent order #ORD-2024-001"),
-            ("Risk Assessment", "Assess risk for international shipping to Europe"),
-            ("Quote Generation", "Generate shipping quote for 50 packages"),
-            ("Coverage Analysis", "Analyze insurance coverage options for fragile goods"),
-            ("Payment Gateway", "Process credit card payment with fraud detection"),
-            ("Authentication Check", "Verify user authentication token")
+            ("Shoe Shopping - General", "I want to buy some shoes"),
+            ("Shoe Shopping - Running", "find running shoes under $150"),
+            ("Shoe Shopping - Work Boots", "I need steel toe work boots"),
+            ("Shoe Shopping - Dress", "formal dress shoes for wedding"),
+            ("Shoe Shopping - Size Check", "check if Nike Air Max size 10 is available"),
+            ("Shoe Store Locator", "find shoe stores near me"),
+            ("Shoe Buying Advice", "what shoes are best for flat feet"),
+            ("Shoe Delivery Tracking", "track my shoe order delivery"),
+            ("Shoe Sizing Help", "help me find the right shoe size"),
+            ("Shoe Care Instructions", "how to care for leather shoes")
         ]
     
     def run_approach_1(self, query: str) -> Tuple[int, int, bool, Optional[str]]:

@@ -16,12 +16,12 @@ BASE_URL = "http://localhost:8000"
 API_KEY = "kpe_fElyteRdsZVlypzp7qPx6yL12MoLPJ07"
 
 # Test scenarios
-TEST_SCENARIOS = [
-    ("Payment Processing", "I need to process a payment for $150"),
-    ("Customer Notification", "Send notification to customer about shipment"),
-    ("Shipping Insurance", "Calculate shipping insurance for items worth $5000"),
-    ("Customer Data", "Get customer profile information"),
-    ("Invoice Generation", "Generate invoice for recent order"),
+SCENARIOS = [
+    ("Shoe Shopping - General", "I want to buy some shoes"),
+    ("Shoe Shopping - Running", "find running shoes under $150"),
+    ("Shoe Shopping - Work Boots", "I need steel toe work boots"),
+    ("Shoe Shopping - Dress", "formal dress shoes for wedding"),
+    ("Shoe Shopping - Size Check", "check if Nike Air Max size 10 is available"),
 ]
 
 def count_tokens_simple(text):
@@ -151,7 +151,7 @@ def main():
     
     results = []
     
-    for scenario_name, query in TEST_SCENARIOS:
+    for scenario_name, query in SCENARIOS:
         print(f"\nTesting: {scenario_name}")
         print(f"Query: '{query}'")
         print("-"*60)

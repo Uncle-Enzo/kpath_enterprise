@@ -108,7 +108,7 @@ class KPathClient:
             logger.warning(f"Could not get JWT token: {e}")
             return None
     
-    def search(self, query: str, search_mode: str = "agents_only", limit: int = 10) -> Tuple[Dict, int]:
+    def search(self, query: str, limit: int = 3) -> Tuple[Dict, int]:
         """
         Perform search and return results with response time
         
@@ -121,7 +121,6 @@ class KPathClient:
         headers = {}
         params = {
             "query": query,
-            "search_mode": search_mode,
             "limit": limit
         }
         
@@ -293,37 +292,30 @@ class TokenConsumptionTest:
             return False
     
     def get_test_scenarios(self) -> List[Tuple[str, str]]:
-        """Define diverse test scenarios covering different domains"""
+        """Define diverse shoe-focused test scenarios covering different use cases"""
         return [
-            # Payment & Financial
-            ("Payment Processing", "I need to process a payment for $150"),
-            ("Invoice Generation", "Generate an invoice for order #ORD-2024-001"),
-            ("Payment Gateway", "Process credit card payment with fraud detection"),
-            ("Financial Reporting", "Generate financial report for Q4 2024"),
+            # General Shoe Shopping
+            ("Shoe Shopping - General", "I want to buy some shoes"),
+            ("Shoe Shopping - Running", "find running shoes under $150"),
+            ("Shoe Shopping - Work Boots", "I need steel toe work boots"),
+            ("Shoe Shopping - Dress", "formal dress shoes for wedding"),
             
-            # Customer Communication
-            ("Customer Notification", "Send notification to customer about shipment"),
-            ("Customer Support", "Handle customer complaint about delayed order"),
-            ("Review Management", "Respond to negative customer review"),
+            # Specific Product Queries
+            ("Shoe Shopping - Size Check", "check if Nike Air Max size 10 is available"),
+            ("Shoe Shopping - Brand Specific", "show me all Adidas running shoes"),
+            ("Shoe Shopping - Color Preference", "black leather dress shoes size 9"),
             
-            # Shipping & Insurance
-            ("Shipping Insurance", "Calculate shipping insurance for items worth $5000"),
-            ("Risk Assessment", "Assess risk for international shipping to Europe"),
-            ("Quote Generation", "Generate shipping quote for 50 packages"),
-            ("Coverage Analysis", "Analyze insurance coverage for fragile goods"),
+            # Service Requests
+            ("Shoe Store Locator", "find shoe stores near me"),
+            ("Shoe Buying Advice", "what shoes are best for flat feet"),
+            ("Shoe Delivery Tracking", "track my shoe order delivery"),
+            ("Shoe Sizing Help", "help me find the right shoe size"),
+            ("Shoe Care Instructions", "how to care for leather shoes"),
             
-            # Data Management
-            ("Customer Data Lookup", "Get customer data for user ID 12345"),
-            ("Inventory Check", "Check inventory levels for SKU-789"),
-            ("Order Tracking", "Track order status for order #12345"),
-            
-            # Authentication & Security
-            ("Authentication Check", "Verify user authentication token"),
-            ("Fraud Detection", "Check transaction for potential fraud"),
-            
-            # Retail Operations
-            ("Price Optimization", "Optimize pricing for seasonal products"),
-            ("Store Analytics", "Analyze foot traffic for downtown store")
+            # Complex Shoe Queries
+            ("Shoe Shopping - Athletic", "I need athletic shoes for basketball"),
+            ("Shoe Shopping - Comfort", "most comfortable walking shoes for seniors"),
+            ("Shoe Shopping - Budget", "cheapest running shoes under $100")
         ]
     
     def run_approach_1(self, query: str) -> Tuple[int, int, bool, Optional[str], int, int]:
@@ -370,8 +362,7 @@ class TokenConsumptionTest:
         # Step 1: Perform tool search
         search_results, response_time = self.kpath_client.search(
             query=query,
-            search_mode="tools_only", 
-            limit=5
+            limit=3
         )
         
         # Step 2: Simulate assistant reasoning and tool selection
@@ -553,7 +544,7 @@ class TokenConsumptionTest:
               f"by {abs(statistics.mean(app2_times) - statistics.mean(app1_times)):.0f}ms on average")
         
         # Save report to file
-        report_path = "token_consumption_report.txt"
+        report_path = "test_reports/token_consumption_report.txt"
         with open(report_path, "w") as f:
             f.write(f"KPATH Enterprise Token Consumption Report\n")
             f.write(f"Generated: {datetime.now()}\n\n")

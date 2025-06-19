@@ -1,0 +1,4 @@
+# Requirements for Shoes Agent
+openai>=1.0.0
+fastapi>=0.68.0
+pydantic>=1.8.0

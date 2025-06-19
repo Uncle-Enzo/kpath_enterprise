@@ -21,7 +21,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 # Configuration
 BASE_URL = "http://localhost:8000"
 API_KEY = "kpe_fElyteRdsZVlypzp7qPx6yL12MoLPJ07"
-REPORT_OUTPUT_PATH = "AUTOMATED_TEST_REPORT.md"
+REPORT_OUTPUT_PATH = "test_reports/AUTOMATED_TEST_REPORT.md"
 
 
 class TokenCounter:
@@ -70,14 +70,14 @@ class TestRunner:
     def get_test_scenarios(self) -> List[TestScenario]:
         """Define test scenarios"""
         return [
-            TestScenario("Payment Processing", "process payment for $150"),
-            TestScenario("Customer Notification", "send notification to customer about shipment"),
-            TestScenario("Shipping Insurance", "calculate shipping insurance for valuable items"),
-            TestScenario("Customer Data Lookup", "get customer profile information"),
-            TestScenario("Invoice Generation", "generate invoice for recent order"),
-            TestScenario("Risk Assessment", "assess risk for international shipping"),
-            TestScenario("Authentication", "verify user authentication token"),
-            TestScenario("Fraud Detection", "check transaction for potential fraud")
+            TestScenario("Shoe Shopping - General", "I want to buy some shoes"),
+            TestScenario("Shoe Shopping - Running", "find running shoes under $150"),
+            TestScenario("Shoe Shopping - Work Boots", "I need steel toe work boots"),
+            TestScenario("Shoe Shopping - Dress", "formal dress shoes for wedding"),
+            TestScenario("Shoe Shopping - Size Check", "check if Nike Air Max size 10 is available"),
+            TestScenario("Shoe Store Locator", "find shoe stores near me"),
+            TestScenario("Shoe Buying Advice", "what shoes are best for flat feet"),
+            TestScenario("Shoe Delivery Tracking", "track my shoe order delivery")
         ]
     
     def check_system_health(self) -> Dict[str, Any]:
@@ -164,8 +164,7 @@ class TestRunner:
         url = f"{BASE_URL}/api/v1/search"
         params = {
             "query": scenario.query,
-            "search_mode": "tools_only",
-            "limit": 5,
+            "limit": 3,
             "api_key": API_KEY
         }
         

@@ -307,19 +307,20 @@ class SearchManager:
 
     def search_tools(self, query: SearchQuery, db: Session) -> List[SearchResult]:
         """
-        Search for tools and return full connectivity information with tool recommendations.
+        Search for tools and return connectivity information with tool recommendations.
+        Supports multiple response modes for token optimization.
         
         Args:
             query: Search query
             db: Database session
             
         Returns:
-            List of search results with full service connectivity data and recommended tools
+            List of search results with service connectivity data and recommended tools
         """
         from backend.models.models import Tool, Service
         import numpy as np
         
-        logger.info(f"Searching tools with query: {query.text}")
+        logger.info(f"Searching tools with query: {query.text}, response_mode: {getattr(query, 'response_mode', 'full')}")
         
         # Check if tool index is built
         if not self.tool_index_built or self.tool_embeddings is None:
@@ -352,6 +353,20 @@ class SearchManager:
         tool_scores = list(zip(self.tool_ids, similarities))
         tool_scores.sort(key=lambda x: x[1], reverse=True)
         
+        # Get response mode settings
+        response_mode = getattr(query, 'response_mode', 'full')
+        include_schemas = getattr(query, 'include_schemas', True)
+        include_examples = getattr(query, 'include_examples', True)
+        field_filter = getattr(query, 'field_filter', None)
+        
+        # Override flags based on response mode
+        if response_mode == 'minimal':
+            include_schemas = False
+            include_examples = False
+        elif response_mode == 'compact':
+            include_schemas = include_schemas and False  # Force off for compact
+            include_examples = include_examples and False  # Force off for compact
+        
         # Get tools and their services from database
         results = []
         for idx, (tool_id, score) in enumerate(tool_scores):
@@ -367,37 +382,56 @@ class SearchManager:
                 
             service = tool.service
             
-            # Get full service data including connectivity information
-            service_data = {
-                'id': service.id,
-                'name': service.name,
-                'description': service.description,
-                'endpoint': service.endpoint,
-                'version': service.version,
-                'status': service.status,
-                'tool_type': service.tool_type,
-                'visibility': service.visibility,
-                'interaction_modes': service.interaction_modes if service.interaction_modes else [],
-                'capabilities': [cap.capability_desc for cap in service.capabilities] if service.capabilities else [],
-                'domains': [domain.domain for domain in service.industries] if service.industries else [],
-                'tags': [],  # Tags not currently in model
-                'default_timeout_ms': service.default_timeout_ms,
-                'default_retry_policy': service.default_retry_policy,
-                'success_criteria': service.success_criteria,
-                'integration_details': self._serialize_integration_details(service.integration_details),
-                'agent_protocol_details': self._serialize_agent_protocols(service.agent_protocols)
-            }
+            # Build service data based on response mode
+            if response_mode == 'minimal':
+                service_data = {
+                    'id': service.id,
+                    'name': service.name,
+                    'description': service.description[:200] + "..." if len(service.description) > 200 else service.description,
+                    'status': service.status
+                }
+            elif response_mode == 'compact':
+                service_data = {
+                    'id': service.id,
+                    'name': service.name,
+                    'description': service.description,
+                    'endpoint': service.endpoint,
+                    'version': service.version,
+                    'status': service.status,
+                    'capabilities': [cap.capability_desc for cap in service.capabilities] if service.capabilities else [],
+                    'domains': [domain.domain for domain in service.industries] if service.industries else []
+                }
+            else:  # full mode
+                service_data = {
+                    'id': service.id,
+                    'name': service.name,
+                    'description': service.description,
+                    'endpoint': service.endpoint,
+                    'version': service.version,
+                    'status': service.status,
+                    'tool_type': service.tool_type,
+                    'visibility': service.visibility,
+                    'interaction_modes': service.interaction_modes if service.interaction_modes else [],
+                    'capabilities': [cap.capability_desc for cap in service.capabilities] if service.capabilities else [],
+                    'domains': [domain.domain for domain in service.industries] if service.industries else [],
+                    'tags': [],  # Tags not currently in model
+                    'default_timeout_ms': service.default_timeout_ms,
+                    'default_retry_policy': service.default_retry_policy,
+                    'success_criteria': service.success_criteria,
+                    'integration_details': self._serialize_integration_details(service.integration_details),
+                    'agent_protocol_details': self._serialize_agent_protocols(service.agent_protocols)
+                }
+                
+                # Add orchestration data if the service has it
+                if hasattr(service, 'agent_protocol') and service.agent_protocol:
+                    service_data['agent_protocol'] = service.agent_protocol
+                    service_data['auth_type'] = service.auth_type
+                    service_data['tool_recommendations'] = service.tool_recommendations
+                    service_data['agent_capabilities'] = service.agent_capabilities
+                    service_data['communication_patterns'] = service.communication_patterns
+                    service_data['orchestration_metadata'] = service.orchestration_metadata
             
-            # Add orchestration data if the service has it
-            if hasattr(service, 'agent_protocol') and service.agent_protocol:
-                service_data['agent_protocol'] = service.agent_protocol
-                service_data['auth_type'] = service.auth_type
-                service_data['tool_recommendations'] = service.tool_recommendations
-                service_data['agent_capabilities'] = service.agent_capabilities
-                service_data['communication_patterns'] = service.communication_patterns
-                service_data['orchestration_metadata'] = service.orchestration_metadata
-            
-            # Create SearchResult with full connectivity data
+            # Create SearchResult with appropriate data level
             result = SearchResult(
                 service_id=service.id,
                 score=float(score),
@@ -406,22 +440,78 @@ class SearchManager:
                 distance=1.0 - score
             )
             
+            # Build recommended tool data based on response mode
+            if response_mode == 'minimal':
+                recommended_tool = {
+                    'tool_id': tool.id,
+                    'tool_name': tool.tool_name,
+                    'tool_description': tool.tool_description[:100] + "..." if len(tool.tool_description) > 100 else tool.tool_description,
+                    'service_name': service.name,
+                    'recommendation_score': float(score),
+                    'details_url': f"/api/v1/tools/{tool.id}/details"
+                }
+            elif response_mode == 'compact':
+                recommended_tool = {
+                    'tool_id': tool.id,
+                    'tool_name': tool.tool_name,
+                    'tool_description': tool.tool_description,
+                    'service_name': service.name,
+                    'tool_version': tool.tool_version,
+                    'is_active': tool.is_active,
+                    'recommendation_score': float(score),
+                    'recommendation_reason': f"Best match for '{query.text}' based on tool capabilities",
+                    'schema_url': f"/api/v1/tools/{tool.id}/schema",
+                    'examples_url': f"/api/v1/tools/{tool.id}/examples"
+                }
+            else:  # full mode
+                recommended_tool = {
+                    'tool_id': tool.id,
+                    'tool_name': tool.tool_name,
+                    'tool_description': tool.tool_description,
+                    'tool_version': tool.tool_version,
+                    'is_active': tool.is_active,
+                    'recommendation_score': float(score),
+                    'recommendation_reason': f"Best match for '{query.text}' based on tool capabilities"
+                }
+                
+                # Add schemas and examples based on flags
+                if include_schemas:
+                    recommended_tool['input_schema'] = tool.input_schema
+                    recommended_tool['output_schema'] = tool.output_schema
+                    if tool.validation_rules:
+                        recommended_tool['validation_rules'] = tool.validation_rules
+                    if tool.error_handling:
+                        recommended_tool['error_handling'] = tool.error_handling
+                
+                if include_examples and tool.example_calls:
+                    recommended_tool['example_calls'] = tool.example_calls
+                
+                # Add performance and rate limiting info if available
+                if tool.performance_metrics:
+                    recommended_tool['performance_metrics'] = tool.performance_metrics
+                if tool.rate_limit_config:
+                    recommended_tool['rate_limit_config'] = tool.rate_limit_config
+            
+            # Apply field filtering if specified
+            if field_filter and response_mode != 'minimal':
+                filtered_tool = {}
+                for field in field_filter:
+                    if field in recommended_tool:
+                        filtered_tool[field] = recommended_tool[field]
+                # Always include essential fields
+                filtered_tool.update({
+                    'tool_id': recommended_tool['tool_id'],
+                    'recommendation_score': recommended_tool['recommendation_score']
+                })
+                recommended_tool = filtered_tool
+            
             # Add recommended tool data
             setattr(result, 'entity_type', 'service_with_tool')
-            setattr(result, 'recommended_tool', {
-                'tool_id': tool.id,
-                'tool_name': tool.tool_name,
-                'tool_description': tool.tool_description,
-                'input_schema': tool.input_schema,
-                'output_schema': tool.output_schema,
-                'example_calls': tool.example_calls,
-                'recommendation_score': float(score),
-                'recommendation_reason': f"Best match for '{query.text}' based on tool capabilities"
-            })
+            setattr(result, 'recommended_tool', recommended_tool)
             
             results.append(result)
         
-        logger.info(f"Tool search returned {len(results)} results with connectivity information")
+        logger.info(f"Tool search returned {len(results)} results with {response_mode} response mode")
         return results
 
     def search_agents_and_tools(self, query: SearchQuery, db: Session) -> List[SearchResult]:

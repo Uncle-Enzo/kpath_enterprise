@@ -8,16 +8,17 @@ import numpy as np
 
 # Data from the automated test report
 scenarios = [
-    "Payment\nProcessing",
-    "Customer\nNotification", 
-    "Shipping\nInsurance",
-    "Customer\nData",
-    "Invoice\nGeneration",
-    "Risk\nAssessment",
-    "Authentication",
-    "Fraud\nDetection"
+    "General\nShoe Shopping",
+    "Running\nShoes", 
+    "Work\nBoots",
+    "Dress\nShoes",
+    "Size\nCheck",
+    "Store\nLocator",
+    "Buying\nAdvice",
+    "Delivery\nTracking"
 ]
 
+# Sample data for shoe-related scenarios (update with actual test results)
 app1_tokens = [1542, 1670, 1661, 1520, 1524, 1657, 1567, 1512]
 app2_tokens = [4109, 3941, 6344, 3982, 3884, 6113, 4311, 3898]
 app1_times = [2130, 73, 67, 77, 74, 62, 63, 65]

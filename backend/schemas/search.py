@@ -17,10 +17,18 @@ class SearchRequest(BaseModel):
     capabilities: Optional[List[str]] = Field(None, description="Filter by specific capabilities")
     include_orchestration: bool = Field(False, description="Include agent orchestration data (tools, schemas, examples)")
     search_mode: Optional[str] = Field(
-        "agents_only",
-        description="Search mode: agents_only (default), tools_only, agents_and_tools, workflows, capabilities",
-        pattern="^(agents_only|tools_only|agents_and_tools|workflows|capabilities)$"
+        "tools_only",
+        description="Search mode: tools_only (default), agents_and_tools, workflows, capabilities",
+        pattern="^(tools_only|agents_and_tools|workflows|capabilities)$"
     )
+    response_mode: Optional[str] = Field(
+        "full",
+        description="Response verbosity: full (default), compact, minimal. Compact removes schemas/examples, minimal returns only essential fields",
+        pattern="^(full|compact|minimal)$"
+    )
+    include_schemas: Optional[bool] = Field(True, description="Include JSON schemas in response (ignored in minimal mode)")
+    include_examples: Optional[bool] = Field(True, description="Include example calls in response (ignored in minimal mode)")
+    field_filter: Optional[List[str]] = Field(None, description="Return only specified fields (applies to tool/service data)")
     
     class Config:
         json_schema_extra = {
@@ -31,7 +39,11 @@ class SearchRequest(BaseModel):
                 "domains": ["finance", "crm"],
                 "capabilities": ["data_processing", "api_integration"],
                 "include_orchestration": True,
-                "search_mode": "agents_only"
+                "search_mode": "tools_only",
+                "response_mode": "compact",
+                "include_schemas": False,
+                "include_examples": False,
+                "field_filter": ["tool_name", "tool_description", "service_name"]
             }
         }
 
@@ -78,7 +90,7 @@ class SearchResponse(BaseModel):
     search_time_ms: float = Field(..., description="Search execution time in milliseconds")
     user_id: int = Field(..., description="ID of user who performed the search")
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Search timestamp")
-    search_mode: str = Field("agents_only", description="Search mode used for this query")
+    search_mode: str = Field("tools_only", description="Search mode used for this query")
     
     class Config:
         json_schema_extra = {

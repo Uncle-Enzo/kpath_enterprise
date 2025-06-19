@@ -33,3 +33,6 @@ python3 test_token_consumption_fixed.py
 
 echo ""
 echo "✅ Test completed!"
+echo ""
+echo "📊 Generated Report:"
+echo "   • test_reports/AUTOMATED_TEST_REPORT.md - Complete test results"

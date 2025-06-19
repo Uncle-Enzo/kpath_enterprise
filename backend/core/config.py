@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     embedding_dimension: int = 384
     
+    # OpenAI Configuration
+    openai_api_key: Optional[str] = None
+    
     # Logging
     log_level: str = "INFO"
     log_format: str = "json"
